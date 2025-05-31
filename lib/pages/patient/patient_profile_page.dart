@@ -43,6 +43,20 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
     }
   }
 
+  // Helper method to safely convert any data type to string
+  String _safeToString(dynamic value) {
+    if (value == null) return 'Not provided';
+    if (value is String) return value.isEmpty ? 'Not provided' : value;
+    if (value is List) {
+      if (value.isEmpty) return 'None';
+      return value.join(', ');
+    }
+    if (value is Map) {
+      return value.toString();
+    }
+    return value.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,6 +98,10 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
   }
 
   Widget _buildProfileHeader() {
+    final fullName = _safeToString(_patientData!['fullName']);
+    final email = _safeToString(_patientData!['email']);
+    final profileCompleted = _patientData!['profileCompleted'] as bool? ?? false;
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -93,7 +111,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
               radius: 40,
               backgroundColor: Colors.blue[100],
               child: Text(
-                _patientData!['fullName']?.substring(0, 1).toUpperCase() ?? 'P',
+                fullName.isNotEmpty ? fullName.substring(0, 1).toUpperCase() : 'P',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -107,7 +125,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _patientData!['fullName'] ?? 'Unknown',
+                    fullName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -115,7 +133,7 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _patientData!['email'] ?? 'No email',
+                    email,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -128,19 +146,19 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: _patientData!['profileCompleted'] == true
+                      color: profileCompleted
                           ? Colors.green[100]
                           : Colors.orange[100],
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _patientData!['profileCompleted'] == true
+                      profileCompleted
                           ? 'Profile Complete'
                           : 'Profile Incomplete',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: _patientData!['profileCompleted'] == true
+                        color: profileCompleted
                             ? Colors.green[800]
                             : Colors.orange[800],
                       ),
@@ -170,13 +188,13 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Date of Birth', _patientData!['dateOfBirth'] ?? 'Not provided'),
-            _buildInfoRow('Gender', _patientData!['gender'] ?? 'Not provided'),
-            _buildInfoRow('Phone', _patientData!['phone'] ?? 'Not provided'),
-            _buildInfoRow('Address', _patientData!['address'] ?? 'Not provided'),
-            _buildInfoRow('Blood Group', _patientData!['bloodGroup'] ?? 'Not provided'),
-            _buildInfoRow('Height', _patientData!['height'] ?? 'Not provided'),
-            _buildInfoRow('Weight', _patientData!['weight'] ?? 'Not provided'),
+            _buildInfoRow('Date of Birth', _safeToString(_patientData!['dateOfBirth'])),
+            _buildInfoRow('Gender', _safeToString(_patientData!['gender'])),
+            _buildInfoRow('Phone', _safeToString(_patientData!['phone'])),
+            _buildInfoRow('Address', _safeToString(_patientData!['address'])),
+            _buildInfoRow('Blood Group', _safeToString(_patientData!['bloodGroup'])),
+            _buildInfoRow('Height', _safeToString(_patientData!['height'])),
+            _buildInfoRow('Weight', _safeToString(_patientData!['weight'])),
           ],
         ),
       ),
@@ -198,12 +216,12 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Medical History', _patientData!['medicalHistory'] ?? 'None'),
-            _buildInfoRow('Current Medications', _patientData!['currentMedications'] ?? 'None'),
-            _buildInfoRow('Allergies', _patientData!['allergies'] ?? 'None'),
-            _buildInfoRow('Chronic Conditions', _patientData!['chronicConditions'] ?? 'None'),
-            _buildInfoRow('Previous Surgeries', _patientData!['previousSurgeries'] ?? 'None'),
-            _buildInfoRow('Family Medical History', _patientData!['familyMedicalHistory'] ?? 'None'),
+            _buildInfoRow('Medical History', _safeToString(_patientData!['medicalHistory'])),
+            _buildInfoRow('Current Medications', _safeToString(_patientData!['currentMedications'])),
+            _buildInfoRow('Allergies', _safeToString(_patientData!['allergies'])),
+            _buildInfoRow('Chronic Conditions', _safeToString(_patientData!['chronicConditions'])),
+            _buildInfoRow('Previous Surgeries', _safeToString(_patientData!['previousSurgeries'])),
+            _buildInfoRow('Family Medical History', _safeToString(_patientData!['familyMedicalHistory'])),
           ],
         ),
       ),
@@ -225,9 +243,9 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Contact Name', _patientData!['emergencyContactName'] ?? 'Not provided'),
-            _buildInfoRow('Relationship', _patientData!['emergencyContactRelationship'] ?? 'Not provided'),
-            _buildInfoRow('Phone Number', _patientData!['emergencyContactPhone'] ?? 'Not provided'),
+            _buildInfoRow('Contact Name', _safeToString(_patientData!['emergencyContactName'])),
+            _buildInfoRow('Relationship', _safeToString(_patientData!['emergencyContactRelationship'])),
+            _buildInfoRow('Phone Number', _safeToString(_patientData!['emergencyContactPhone'])),
           ],
         ),
       ),
@@ -273,14 +291,25 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                     const SizedBox(height: 8),
                     ...snapshot.data!.docs.map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
-                      final date = DateTime.parse(data['date']);
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4.0),
-                        child: Text(
-                          '• ${DateFormat('MMM dd, yyyy').format(date)} - ${(data['medications'] as List).length} medications',
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                      );
+                      try {
+                        final date = DateTime.parse(data['date']);
+                        final medications = data['medications'] as List? ?? [];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                            '• ${DateFormat('MMM dd, yyyy').format(date)} - ${medications.length} medications',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        );
+                      } catch (e) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                            '• Prescription record',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        );
+                      }
                     }).toList(),
                   ],
                 );
@@ -312,14 +341,24 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
                     const SizedBox(height: 8),
                     ...snapshot.data!.docs.map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
-                      final startDate = DateTime.parse(data['startDate']);
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4.0),
-                        child: Text(
-                          '• ${DateFormat('MMM dd, yyyy').format(startDate)} - Diet plan created',
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                      );
+                      try {
+                        final startDate = DateTime.parse(data['startDate']);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                            '• ${DateFormat('MMM dd, yyyy').format(startDate)} - Diet plan created',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        );
+                      } catch (e) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                            '• Diet plan record',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        );
+                      }
                     }).toList(),
                   ],
                 );
