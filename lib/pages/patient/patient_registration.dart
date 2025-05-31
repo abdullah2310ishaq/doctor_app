@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:doctor_app/pages/login_page.dart';
-import 'package:doctor_app/pages/patient/patient_personal_data_form.dart';
+import 'package:doctor_app/pages/patient/patient_dashboard.dart';
 
 class PatientRegistration extends StatefulWidget {
   const PatientRegistration({super.key});
@@ -65,7 +65,7 @@ class _PatientRegistrationState extends State<PatientRegistration> {
           'role': 'patient',
           'fullName': _nameController.text.trim(),
           'email': _emailController.text.trim(),
-          'profileCompleted': false,
+          'profileCompleted': true, // Change this from false to true
           'createdAt': FieldValue.serverTimestamp(),
         });
       }
@@ -73,14 +73,14 @@ class _PatientRegistrationState extends State<PatientRegistration> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Registration successful! Please complete your profile.'),
+          content: Text('Registration successful! Welcome to the app.'), // Update message
         ),
       );
 
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const PatientPersonalDataForm()),
+        MaterialPageRoute(builder: (context) => const PatientDashboard()), // Go directly to dashboard
       );
 
     } on FirebaseAuthException catch (e) {

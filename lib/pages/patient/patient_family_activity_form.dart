@@ -119,13 +119,14 @@ class _PatientFamilyActivityFormState extends State<PatientFamilyActivityForm> {
           backgroundColor: Colors.green,
         ),
       );
-      _saveFamilyActivityData();
+
       // Navigate to Diet Strength Form
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const PatientDietStrengthForm(),
         ),
       );
+
     } on FirebaseException catch (e) {
       if (!mounted) return;
       setState(() {

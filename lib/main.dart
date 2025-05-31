@@ -83,9 +83,15 @@ class AuthWrapper extends StatelessWidget {
       if (patientDoc.exists) {
         final data = patientDoc.data() as Map<String, dynamic>?;
         final profileCompleted = data?['profileCompleted'] as bool? ?? false;
+        final profileVersion = data?['profileVersion'] as int? ?? 0;
 
-        // ALWAYS go to dashboard if patient exists (remove form check)
-        return const PatientDashboard();
+        // Check if profile is completed with version 29
+        if (profileCompleted && profileVersion >= 29) {
+          return const PatientDashboard();
+        } else {
+          // Profile not completed or old version, go to original form flow
+          return const PatientPersonalDataForm();
+        }
       }
 
       // User document not found, sign out and go to welcome

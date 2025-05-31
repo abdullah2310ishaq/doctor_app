@@ -58,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
         DocumentSnapshot? userDoc;
         String? userRole;
         bool? profileCompleted;
+        int? profileVersion;
 
         // Try to fetch from 'doctors' collection first
         userDoc = await _firestore.collection('doctors').doc(user.uid).get();
@@ -73,6 +74,7 @@ class _LoginPageState extends State<LoginPage> {
             profileCompleted = data?.containsKey('profileCompleted') == true
                 ? data!['profileCompleted'] as bool?
                 : false;
+            profileVersion = data?['profileVersion'] as int? ?? 0;
           }
         }
 
@@ -84,15 +86,15 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (context) => const DoctorDashboard()),
           );
         } else if (userRole == 'patient') {
-          // Check if profile is completed
-          if (profileCompleted == true) {
-            // Profile is complete, go directly to dashboard
+          // Check if profile is completed with version 29
+          if (profileCompleted == true && profileVersion! >= 29) {
+            // Profile is complete with latest version, go to dashboard
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const PatientDashboard()),
             );
           } else {
-            // Profile is not completed, go to profile completion form
+            // Profile is not completed or old version, go to original form flow
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const PatientPersonalDataForm()),
