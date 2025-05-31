@@ -1,87 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:doctor_app/pages/patient/patient_dashboard.dart';
-import 'package:doctor_app/pages/patient/patient_family_activity_form.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:doctor_app/pages/patient/patient_health_lifestyle_form.dart';
 
 class PatientPersonalDataForm extends StatefulWidget {
   const PatientPersonalDataForm({super.key});
 
   @override
-  State<PatientPersonalDataForm> createState() => _PatientPersonalDataFormState();
+  State<PatientPersonalDataForm> createState() =>
+      _PatientPersonalDataFormState();
 }
 
 class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
   final _formKey = GlobalKey<FormState>();
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-  bool _isLoading = false;
-  String? _errorMessage;
-
-  // Controllers for all form fields
-  final _dateOfBirthController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
-  final _heightController = TextEditingController();
-  final _weightController = TextEditingController();
-  final _medicalHistoryController = TextEditingController();
-  final _currentMedicationsController = TextEditingController();
-  final _allergiesController = TextEditingController();
-  final _chronicConditionsController = TextEditingController();
-  final _previousSurgeriesController = TextEditingController();
-  final _familyMedicalHistoryController = TextEditingController();
-  final _emergencyContactNameController = TextEditingController();
-  final _emergencyContactPhoneController = TextEditingController();
-  final _emergencyContactRelationshipController = TextEditingController();
+  final _emergencyContactController = TextEditingController();
 
   String? _selectedGender;
   String? _selectedBloodGroup;
+  bool _isLoading = false;
+  String? _errorMessage;
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final List<String> _genders = ['Male', 'Female', 'Other'];
+  final List<String> _bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
   @override
   void dispose() {
-    _dateOfBirthController.dispose();
+    _nameController.dispose();
+    _ageController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _heightController.dispose();
-    _weightController.dispose();
-    _medicalHistoryController.dispose();
-    _currentMedicationsController.dispose();
-    _allergiesController.dispose();
-    _chronicConditionsController.dispose();
-    _previousSurgeriesController.dispose();
-    _familyMedicalHistoryController.dispose();
-    _emergencyContactNameController.dispose();
-    _emergencyContactPhoneController.dispose();
-    _emergencyContactRelationshipController.dispose();
-    _pageController.dispose();
+    _emergencyContactController.dispose();
     super.dispose();
   }
 
-  void _nextPage() {
-    if (_currentPage < 2) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      _submitForm();
-    }
-  }
-
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
-  void _submitForm() async {
+  void _savePersonalData() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_selectedGender == null || _selectedBloodGroup == null) {
+      setState(() {
+        _errorMessage = 'Please select gender and blood group.';
+      });
       return;
     }
 
@@ -90,61 +57,56 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
       _errorMessage = null;
     });
 
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        throw Exception('User not authenticated');
-      }
+    final user = _auth.currentUser;
+    if (user == null) {
+      setState(() {
+        _errorMessage = 'User not logged in.';
+        _isLoading = false;
+      });
+      return;
+    }
 
-      // Update patient data in Firestore
-      await _firestore.collection('patients').doc(user.uid).update({
-        'dateOfBirth': _dateOfBirthController.text.trim(),
+    try {
+      final personalData = {
+        'name': _nameController.text.trim(),
+        'age': int.parse(_ageController.text.trim()),
         'gender': _selectedGender,
+        'bloodGroup': _selectedBloodGroup,
         'phone': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
-        'bloodGroup': _selectedBloodGroup,
-        'height': _heightController.text.trim(),
-        'weight': _weightController.text.trim(),
-        'medicalHistory': _medicalHistoryController.text.trim(),
-        'currentMedications': _currentMedicationsController.text.trim(),
-        'allergies': _allergiesController.text.trim(),
-        'chronicConditions': _chronicConditionsController.text.trim(),
-        'previousSurgeries': _previousSurgeriesController.text.trim(),
-        'familyMedicalHistory': _familyMedicalHistoryController.text.trim(),
-        'emergencyContactName': _emergencyContactNameController.text.trim(),
-        'emergencyContactPhone': _emergencyContactPhoneController.text.trim(),
-        'emergencyContactRelationship': _emergencyContactRelationshipController.text.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+        'emergencyContact': _emergencyContactController.text.trim(),
+        'email': user.email,
+        'userId': user.uid,
+        'userType': 'patient',
+        'createdAt': FieldValue.serverTimestamp(),
+        'personalDataCompleted': true,
+      };
+
+      await _firestore
+          .collection('patients')
+          .doc(user.uid)
+          .set(personalData, SetOptions(merge: true));
 
       if (!mounted) return;
 
-      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Profile completed successfully! 🎉'),
+          content: Text('Personal data saved successfully!'),
           backgroundColor: Colors.green,
         ),
       );
 
-      // Navigate to family activity form instead of dashboard
+      // Navigate to health lifestyle form instead of family activity form
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const PatientFamilyActivityForm()),
+        MaterialPageRoute(builder: (context) => const PatientHealthLifestyleForm()),
       );
 
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'Error saving profile: $e';
+        _errorMessage = 'Error saving data: $e';
         _isLoading = false;
       });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
@@ -152,427 +114,241 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Complete Your Profile'),
+        title: const Text('Personal Information'),
         backgroundColor: Colors.blue[50],
       ),
-      body: Column(
-        children: [
-          // Progress indicator
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                for (int i = 0; i < 3; i++)
-                  Expanded(
-                    child: Container(
-                      height: 4,
-                      margin: EdgeInsets.only(right: i < 2 ? 8 : 0),
-                      decoration: BoxDecoration(
-                        color: i <= _currentPage ? Colors.blue : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
+      body: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Tell us about yourself',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 24),
+
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.person),
                       ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-              ],
-            ),
-          ),
-          
-          // Form content
-          Expanded(
-            child: Form(
-              key: _formKey,
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (page) {
-                  setState(() {
-                    _currentPage = page;
-                  });
-                },
-                children: [
-                  _buildPersonalInfoPage(),
-                  _buildMedicalInfoPage(),
-                  _buildEmergencyContactPage(),
-                ],
-              ),
-            ),
-          ),
-          
-          // Navigation buttons
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                if (_currentPage > 0)
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isLoading ? null : _previousPage,
-                      child: const Text('Previous'),
-                    ),
-                  ),
-                if (_currentPage > 0) const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _nextPage,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _ageController,
+                            decoration: const InputDecoration(
+                              labelText: 'Age *',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.cake),
                             ),
-                          )
-                        : Text(_currentPage < 2 ? 'Next' : 'Complete Profile'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPersonalInfoPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Personal Information',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          TextFormField(
-            controller: _dateOfBirthController,
-            decoration: const InputDecoration(
-              labelText: 'Date of Birth (YYYY-MM-DD)',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.calendar_today),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your date of birth';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          DropdownButtonFormField<String>(
-            value: _selectedGender,
-            decoration: const InputDecoration(
-              labelText: 'Gender',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.person),
-            ),
-            items: ['Male', 'Female', 'Other'].map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedGender = newValue;
-              });
-            },
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select your gender';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _phoneController,
-            decoration: const InputDecoration(
-              labelText: 'Phone Number',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.phone),
-            ),
-            keyboardType: TextInputType.phone,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your phone number';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _addressController,
-            decoration: const InputDecoration(
-              labelText: 'Address',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.location_on),
-            ),
-            maxLines: 3,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your address';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          DropdownButtonFormField<String>(
-            value: _selectedBloodGroup,
-            decoration: const InputDecoration(
-              labelText: 'Blood Group',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.bloodtype),
-            ),
-            items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedBloodGroup = newValue;
-              });
-            },
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select your blood group';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _heightController,
-                  decoration: const InputDecoration(
-                    labelText: 'Height (cm)',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.height),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your height';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: _weightController,
-                  decoration: const InputDecoration(
-                    labelText: 'Weight (kg)',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.monitor_weight),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your weight';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMedicalInfoPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Medical Information',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          TextFormField(
-            controller: _medicalHistoryController,
-            decoration: const InputDecoration(
-              labelText: 'Medical History',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.history),
-              hintText: 'Any past medical conditions or treatments',
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _currentMedicationsController,
-            decoration: const InputDecoration(
-              labelText: 'Current Medications',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.medication),
-              hintText: 'List any medications you are currently taking',
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _allergiesController,
-            decoration: const InputDecoration(
-              labelText: 'Allergies',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.warning),
-              hintText: 'Food, drug, or environmental allergies',
-            ),
-            maxLines: 2,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _chronicConditionsController,
-            decoration: const InputDecoration(
-              labelText: 'Chronic Conditions',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.local_hospital),
-              hintText: 'Diabetes, hypertension, etc.',
-            ),
-            maxLines: 2,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _previousSurgeriesController,
-            decoration: const InputDecoration(
-              labelText: 'Previous Surgeries',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.healing),
-              hintText: 'Any surgeries you have had',
-            ),
-            maxLines: 2,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _familyMedicalHistoryController,
-            decoration: const InputDecoration(
-              labelText: 'Family Medical History',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.family_restroom),
-              hintText: 'Medical conditions that run in your family',
-            ),
-            maxLines: 3,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmergencyContactPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Emergency Contact',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          TextFormField(
-            controller: _emergencyContactNameController,
-            decoration: const InputDecoration(
-              labelText: 'Emergency Contact Name',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.person),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter emergency contact name';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _emergencyContactPhoneController,
-            decoration: const InputDecoration(
-              labelText: 'Emergency Contact Phone',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.phone),
-            ),
-            keyboardType: TextInputType.phone,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter emergency contact phone';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: _emergencyContactRelationshipController,
-            decoration: const InputDecoration(
-              labelText: 'Relationship',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.family_restroom),
-              hintText: 'e.g., Mother, Father, Spouse, Friend',
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter relationship';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 24),
-          
-          if (_errorMessage != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red[200]!),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red[600]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: TextStyle(color: Colors.red[600]),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter age';
+                              }
+                              final age = int.tryParse(value.trim());
+                              if (age == null || age < 1 || age > 120) {
+                                return 'Enter valid age';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedGender,
+                            decoration: const InputDecoration(
+                              labelText: 'Gender *',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.wc),
+                            ),
+                            items: _genders.map((gender) {
+                              return DropdownMenuItem(
+                                value: gender,
+                                child: Text(gender),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedGender = value;
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Select gender';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 16),
+
+                    DropdownButtonFormField<String>(
+                      value: _selectedBloodGroup,
+                      decoration: const InputDecoration(
+                        labelText: 'Blood Group *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.bloodtype),
+                      ),
+                      items: _bloodGroups.map((bloodGroup) {
+                        return DropdownMenuItem(
+                          value: bloodGroup,
+                          child: Text(bloodGroup),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedBloodGroup = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Please select blood group';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.phone),
+                      ),
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Address *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.home),
+                      ),
+                      maxLines: 2,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      controller: _emergencyContactController,
+                      decoration: const InputDecoration(
+                        labelText: 'Emergency Contact *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.emergency),
+                      ),
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter emergency contact';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    if (_errorMessage != null)
+                      Container(
+                        margin: const EdgeInsets.only(top: 16),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red[200]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: TextStyle(color: Colors.red[600]),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+            ),
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, -3),
                   ),
                 ],
               ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _savePersonalData,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Continue',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                ),
+              ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

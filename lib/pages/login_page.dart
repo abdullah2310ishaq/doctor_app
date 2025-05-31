@@ -4,6 +4,8 @@ import 'package:doctor_app/pages/patient/patient_dashboard.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:doctor_app/pages/patient/patient_personal_data_form.dart';
+// Remove this line
+// import 'package:doctor_app/pages/patient/patient_comprehensive_registration.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

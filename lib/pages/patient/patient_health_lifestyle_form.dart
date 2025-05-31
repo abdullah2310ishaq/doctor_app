@@ -2,8 +2,6 @@ import 'package:doctor_app/pages/patient/patient_family_activity_form.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:doctor_app/pages/patient/patient_family_activity_form.dart'; // Placeholder for next page
-import 'package:doctor_app/pages/patient/patient_dashboard.dart'; // Temporary navigation for now
 
 class PatientHealthLifestyleForm extends StatefulWidget {
   const PatientHealthLifestyleForm({super.key});
@@ -190,6 +188,8 @@ class _PatientHealthLifestyleFormState
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); // Use merge: true to update existing fields
 
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Health & Lifestyle data saved successfully!')),
@@ -201,11 +201,13 @@ class _PatientHealthLifestyleFormState
             builder: (context) => const PatientFamilyActivityForm()),
       );
     } on FirebaseException catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Failed to save data: ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'An unexpected error occurred: $e';
         _isLoading = false;
@@ -217,7 +219,8 @@ class _PatientHealthLifestyleFormState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Patient Profile: Health & Lifestyle'),
+        title: const Text('Health & Lifestyle'),
+        backgroundColor: Colors.blue[50],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

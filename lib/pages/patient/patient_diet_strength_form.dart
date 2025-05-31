@@ -205,6 +205,7 @@ class _PatientDietStrengthFormState extends State<PatientDietStrengthForm> {
         'muscleStrength': _sarcfAnswers,
         'applicationUsability': _susAnswers,
         'profileCompleted': true, // Mark profile as fully completed!
+        'profileVersion': 29, // Add version 29
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
