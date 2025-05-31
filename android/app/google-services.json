@@ -1,0 +1,154 @@
+{
+  "project_info": {
+    "project_number": "636158664886",
+    "project_id": "fir-chat-app-821a5",
+    "storage_bucket": "fir-chat-app-821a5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636158664886:android:26a7a03d94b45914efc617",
+        "android_client_info": {
+          "package_name": "com.example.blood"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo4QGvc3qNLopb9Ym922v1lcFrYnayLRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "636158664886-a4nh3n1vrkbaffsinktuehljoqnfrqp8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.blooodDonationApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636158664886:android:d94ca55d2ebecb92efc617",
+        "android_client_info": {
+          "package_name": "com.example.bloood_donation_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo4QGvc3qNLopb9Ym922v1lcFrYnayLRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "636158664886-a4nh3n1vrkbaffsinktuehljoqnfrqp8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.blooodDonationApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636158664886:android:5c4ad209c924fdc7efc617",
+        "android_client_info": {
+          "package_name": "com.example.chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo4QGvc3qNLopb9Ym922v1lcFrYnayLRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "636158664886-a4nh3n1vrkbaffsinktuehljoqnfrqp8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.blooodDonationApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636158664886:android:85b6fbd3e533cb25efc617",
+        "android_client_info": {
+          "package_name": "com.example.doctor_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo4QGvc3qNLopb9Ym922v1lcFrYnayLRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636158664886-7s03ivqjvojeagqkk67788spjvtinvdj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "636158664886-a4nh3n1vrkbaffsinktuehljoqnfrqp8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.blooodDonationApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
