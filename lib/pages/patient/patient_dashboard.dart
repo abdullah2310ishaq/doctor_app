@@ -8,7 +8,6 @@ import 'package:doctor_app/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:doctor_app/pages/patient/patient_profile_page.dart';
 
 class PatientDashboard extends StatefulWidget {
   const PatientDashboard({super.key});
@@ -84,20 +83,19 @@ class _PatientDashboardState extends State<PatientDashboard> {
     }
   }
 
-  // Book appointment with notifications
   void _bookAppointment(String doctorId, String doctorName) async {
     final user = _auth.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to book an appointment')),
+        const SnackBar(
+            content: Text('You must be logged in to book an appointment')),
       );
       return;
     }
 
     try {
       final appointmentTime = DateTime.now().add(const Duration(days: 1));
-      
-      // Create appointment in Firestore
+
       final appointmentRef = await _firestore.collection('appointments').add({
         'doctorId': doctorId,
         'patientId': user.uid,
@@ -110,7 +108,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Create notification for doctor
       await NotificationService.createAppointmentNotification(
         doctorId: doctorId,
         patientName: _patientName,
@@ -140,8 +137,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
   Widget build(BuildContext context) {
     final user = _auth.currentUser;
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in')),
+      return Scaffold(
+        body: Center(
+          child: Text(
+            'Please log in',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.grey[700],
+                ),
+          ),
+        ),
       );
     }
 
@@ -149,9 +153,11 @@ class _PatientDashboardState extends State<PatientDashboard> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Error'),
+          backgroundColor: Colors.red[50],
+          elevation: 0,
           actions: [
             IconButton(
-              icon: const Icon(Icons.logout),
+              icon: const Icon(Icons.logout, color: Colors.red),
               onPressed: _signOut,
             ),
           ],
@@ -160,12 +166,27 @@ class _PatientDashboardState extends State<PatientDashboard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              Icon(Icons.error_outline, size: 64, color: Colors.red[600]),
               const SizedBox(height: 16),
-              Text(_errorMessage!, style: const TextStyle(fontSize: 16)),
+              Text(
+                _errorMessage!,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.red[600],
+                    ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loadPatientName,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[600],
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 child: const Text('Retry'),
               ),
             ],
@@ -176,37 +197,42 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hello, $_patientName'),
-        backgroundColor: Colors.green[50],
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PatientProfilePage()),
-              );
-            },
+        title: Text(
+          'Hello, $_patientName',
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
           ),
-          // Real-time notification badge
+        ),
+        backgroundColor: Colors.teal[50],
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.teal[100]!, Colors.teal[50]!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        actions: [
           StreamBuilder<int>(
             stream: NotificationService.getUnreadCount(user.uid),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return const Icon(Icons.notifications);
               }
-              
+
               final unreadCount = snapshot.data ?? 0;
-              
+
               return Stack(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.notifications),
+                    icon: const Icon(Icons.notifications, color: Colors.teal),
                     onPressed: () {
                       setState(() {
                         _selectedIndex = 4;
                       });
-                      // Mark all as read when opening notifications
                       NotificationService.markAllAsRead(user.uid);
                     },
                   ),
@@ -215,20 +241,21 @@ class _PatientDashboardState extends State<PatientDashboard> {
                       right: 8,
                       top: 8,
                       child: Container(
-                        padding: const EdgeInsets.all(2),
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.red[600],
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
+                          minWidth: 20,
+                          minHeight: 20,
                         ),
                         child: Text(
                           unreadCount.toString(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -239,7 +266,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.teal),
             onPressed: _signOut,
           ),
         ],
@@ -254,11 +281,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
             _selectedIndex = index;
           });
           if (index == 4 && user != null) {
-            // Mark all notifications as read when opening notifications tab
             NotificationService.markAllAsRead(user.uid);
           }
         },
         type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.teal[50],
+        selectedItemColor: Colors.teal[700],
+        unselectedItemColor: Colors.grey[600],
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -302,7 +333,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
     }
   }
 
-  // FIXED: Doctors tab with proper error handling
   Widget _buildDoctorsTab() {
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore.collection('doctors').snapshots(),
@@ -316,14 +346,27 @@ class _PatientDashboardState extends State<PatientDashboard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[600]),
                 const SizedBox(height: 16),
-                Text('Error: ${snapshot.error}'),
+                Text(
+                  'Error: ${snapshot.error}',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.red[600],
+                      ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {}); // Refresh
+                    setState(() {});
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],
@@ -332,20 +375,25 @@ class _PatientDashboardState extends State<PatientDashboard> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.local_hospital, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Icon(Icons.local_hospital, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
                 Text(
                   'No doctors available',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Doctors will appear here when they register',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[500],
+                      ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -356,7 +404,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
         return RefreshIndicator(
           onRefresh: () async {
-            setState(() {}); // Refresh
+            setState(() {});
           },
           child: ListView.builder(
             padding: const EdgeInsets.all(16.0),
@@ -367,7 +415,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16.0),
-                elevation: 2,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -376,16 +427,19 @@ class _PatientDashboardState extends State<PatientDashboard> {
                       Row(
                         children: [
                           CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.blue[100],
+                            radius: 32,
+                            backgroundColor: Colors.teal[100],
                             child: Text(
-                              (doctorData['fullName'] as String?)?.isNotEmpty == true 
-                                  ? doctorData['fullName'].substring(0, 1).toUpperCase() 
+                              (doctorData['fullName'] as String?)?.isNotEmpty ==
+                                      true
+                                  ? doctorData['fullName']
+                                      .substring(0, 1)
+                                      .toUpperCase()
                                   : 'D',
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue[800],
+                                color: Colors.teal[800],
                               ),
                             ),
                           ),
@@ -396,26 +450,35 @@ class _PatientDashboardState extends State<PatientDashboard> {
                               children: [
                                 Text(
                                   'Dr. ${doctorData['fullName'] ?? 'Unknown'}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.teal[900],
+                                      ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  doctorData['specialization'] ?? 'General Practitioner',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
+                                  doctorData['specialization'] ??
+                                      'General Practitioner',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.grey[600],
+                                      ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  doctorData['clinicName'] ?? 'Private Practice',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
+                                  doctorData['clinicName'] ??
+                                      'Private Practice',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.grey[600],
+                                      ),
                                 ),
                               ],
                             ),
@@ -423,27 +486,41 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      if (doctorData['phone'] != null && doctorData['phone'].toString().isNotEmpty) ...[
+                      if (doctorData['phone'] != null &&
+                          doctorData['phone'].toString().isNotEmpty) ...[
                         Row(
                           children: [
-                            Icon(Icons.phone, size: 16, color: Colors.grey[600]),
+                            Icon(Icons.phone,
+                                size: 16, color: Colors.grey[600]),
                             const SizedBox(width: 8),
                             Text(
                               doctorData['phone'],
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                       ],
-                      if (doctorData['email'] != null && doctorData['email'].toString().isNotEmpty) ...[
+                      if (doctorData['email'] != null &&
+                          doctorData['email'].toString().isNotEmpty) ...[
                         Row(
                           children: [
-                            Icon(Icons.email, size: 16, color: Colors.grey[600]),
+                            Icon(Icons.email,
+                                size: 16, color: Colors.grey[600]),
                             const SizedBox(width: 8),
                             Text(
                               doctorData['email'],
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           ],
                         ),
@@ -459,9 +536,13 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           icon: const Icon(Icons.calendar_today),
                           label: const Text('Book Appointment'),
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Colors.teal,
                             foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
                           ),
                         ),
                       ),
@@ -476,16 +557,22 @@ class _PatientDashboardState extends State<PatientDashboard> {
     );
   }
 
-  // FIXED: Home tab with proper data handling
   Widget _buildHomeTab() {
     final user = _auth.currentUser;
     if (user == null) {
-      return const Center(child: Text('Please log in'));
+      return Center(
+        child: Text(
+          'Please log in',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.grey[700],
+              ),
+        ),
+      );
     }
 
     return RefreshIndicator(
       onRefresh: () async {
-        setState(() {}); // Refresh
+        setState(() {});
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -493,50 +580,44 @@ class _PatientDashboardState extends State<PatientDashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Quick Actions Card
             Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Quick Actions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal[900],
+                          ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const PatientProfilePage()),
-                              );
-                            },
-                            icon: const Icon(Icons.person),
-                            label: const Text('View Profile'),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
                               setState(() {
-                                _selectedIndex = 1; // Go to Doctors tab
+                                _selectedIndex = 1;
                               });
                             },
                             icon: const Icon(Icons.local_hospital),
                             label: const Text('Find Doctors'),
                             style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
                             ),
                           ),
                         ),
@@ -547,32 +628,36 @@ class _PatientDashboardState extends State<PatientDashboard> {
               ),
             ),
             const SizedBox(height: 16),
-            
-            // FIXED: Upcoming Appointments with proper index
             Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Upcoming Appointments',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal[900],
+                          ),
                     ),
                     const SizedBox(height: 16),
                     StreamBuilder<QuerySnapshot>(
                       stream: _firestore
                           .collection('appointments')
                           .where('patientId', isEqualTo: user.uid)
-                          .where('status', whereIn: ['pending', 'confirmed', 'scheduled'])
+                          .where('status',
+                              whereIn: ['pending', 'confirmed', 'scheduled'])
                           .orderBy('appointmentTime')
                           .limit(3)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Center(child: CircularProgressIndicator());
                         }
 
@@ -580,16 +665,26 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           return Center(
                             child: Text(
                               'Unable to load appointments',
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           );
                         }
 
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const Center(
+                          return Center(
                             child: Text(
                               'No upcoming appointments',
-                              style: TextStyle(color: Colors.grey),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           );
                         }
@@ -598,16 +693,17 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         return Column(
                           children: appointments.map((doc) {
                             final data = doc.data() as Map<String, dynamic>;
-                            final appointmentDate = DateTime.parse(data['appointmentTime'] as String);
-                            
+                            final appointmentDate = DateTime.parse(
+                                data['appointmentTime'] as String);
+
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: Container(
                                 width: 48,
                                 height: 48,
                                 decoration: BoxDecoration(
-                                  color: Colors.blue[100],
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.teal[100],
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -615,19 +711,29 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.blue[800],
+                                      color: Colors.teal[800],
                                     ),
                                   ),
                                 ),
                               ),
                               title: Text(
-                                data['appointmentType'] as String? ?? 'Appointment',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                data['appointmentType'] as String? ??
+                                    'Appointment',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                               subtitle: Text(
                                 '${DateFormat('MMM dd, yyyy').format(appointmentDate)} at ${DateFormat('hh:mm a').format(appointmentDate)}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
                               ),
                             );
                           }).toList(),
@@ -642,7 +748,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
                             _selectedIndex = 2;
                           });
                         },
-                        child: const Text('View All Appointments'),
+                        child: Text(
+                          'View All Appointments',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: Colors.teal,
+                              ),
+                        ),
                       ),
                     ),
                   ],
@@ -650,20 +761,22 @@ class _PatientDashboardState extends State<PatientDashboard> {
               ),
             ),
             const SizedBox(height: 16),
-            
-            // FIXED: Diet Plans with proper index
             Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Current Diet Plan',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal[900],
+                          ),
                     ),
                     const SizedBox(height: 16),
                     StreamBuilder<QuerySnapshot>(
@@ -674,7 +787,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           .limit(1)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Center(child: CircularProgressIndicator());
                         }
 
@@ -682,36 +796,51 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           return Center(
                             child: Text(
                               'Unable to load diet plans',
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           );
                         }
 
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const Center(
+                          return Center(
                             child: Text(
                               'No diet plans available',
-                              style: TextStyle(color: Colors.grey),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           );
                         }
 
                         final dietPlanDoc = snapshot.data!.docs.first;
-                        final dietPlanData = dietPlanDoc.data() as Map<String, dynamic>;
-                        
+                        final dietPlanData =
+                            dietPlanDoc.data() as Map<String, dynamic>;
+
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Plan Duration: ${DateFormat('MMM dd').format(DateTime.parse(dietPlanData['startDate'] as String))} - ${DateFormat('MMM dd').format(DateTime.parse(dietPlanData['endDate'] as String))}',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                             const SizedBox(height: 12),
                             if (dietPlanData['meals'] != null) ...[
-                              ...(dietPlanData['meals'] as List).take(3).map((meal) {
+                              ...(dietPlanData['meals'] as List)
+                                  .take(3)
+                                  .map((meal) {
                                 final mealData = meal as Map<String, dynamic>;
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 8.0),
@@ -721,10 +850,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                         width: 8,
                                         height: 8,
                                         decoration: BoxDecoration(
-                                          color: mealData['type'] == 'Breakfast' 
-                                              ? Colors.orange 
-                                              : mealData['type'] == 'Lunch' 
-                                                  ? Colors.green 
+                                          color: mealData['type'] == 'Breakfast'
+                                              ? Colors.orange
+                                              : mealData['type'] == 'Lunch'
+                                                  ? Colors.green
                                                   : Colors.blue,
                                           shape: BoxShape.circle,
                                         ),
@@ -733,7 +862,9 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                       Expanded(
                                         child: Text(
                                           '${mealData['type']}: ${mealData['name']}',
-                                          style: const TextStyle(fontSize: 14),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium,
                                         ),
                                       ),
                                     ],
@@ -741,14 +872,18 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                 );
                               }).toList(),
                             ],
-                            if (dietPlanData['restrictions'] != null && (dietPlanData['restrictions'] as List).isNotEmpty) ...[
+                            if (dietPlanData['restrictions'] != null &&
+                                (dietPlanData['restrictions'] as List)
+                                    .isNotEmpty) ...[
                               const SizedBox(height: 8),
                               Text(
                                 'Restrictions: ${(dietPlanData['restrictions'] as List).join(', ')}',
-                                style: TextStyle(
-                                  color: Colors.red[600],
-                                  fontSize: 12,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Colors.red[600],
+                                    ),
                               ),
                             ],
                           ],
@@ -758,10 +893,13 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     const SizedBox(height: 8),
                     Center(
                       child: TextButton(
-                        onPressed: () {
-                          // Navigate to diet plan details
-                        },
-                        child: const Text('View Full Diet Plan'),
+                        onPressed: () {},
+                        child: Text(
+                          'View Full Diet Plan',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: Colors.teal,
+                              ),
+                        ),
                       ),
                     ),
                   ],
@@ -769,20 +907,22 @@ class _PatientDashboardState extends State<PatientDashboard> {
               ),
             ),
             const SizedBox(height: 16),
-            
-            // FIXED: Recent Prescriptions with proper index
             Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Recent Prescriptions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal[900],
+                          ),
                     ),
                     const SizedBox(height: 16),
                     StreamBuilder<QuerySnapshot>(
@@ -793,7 +933,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           .limit(2)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Center(child: CircularProgressIndicator());
                         }
 
@@ -801,16 +942,26 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           return Center(
                             child: Text(
                               'Unable to load prescriptions',
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           );
                         }
 
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const Center(
+                          return Center(
                             child: Text(
                               'No prescriptions available',
-                              style: TextStyle(color: Colors.grey),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           );
                         }
@@ -819,33 +970,44 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         return Column(
                           children: prescriptions.map((doc) {
                             final data = doc.data() as Map<String, dynamic>;
-                            final prescriptionDate = DateTime.parse(data['date'] as String);
-                            final medications = data['medications'] as List? ?? [];
-                            
+                            final prescriptionDate =
+                                DateTime.parse(data['date'] as String);
+                            final medications =
+                                data['medications'] as List? ?? [];
+
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: Container(
                                 width: 48,
                                 height: 48,
                                 decoration: BoxDecoration(
-                                  color: Colors.green[100],
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.teal[100],
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Center(
                                   child: Icon(
                                     Icons.medical_services,
-                                    color: Colors.green,
+                                    color: Colors.teal,
                                   ),
                                 ),
                               ),
-                              title: const Text(
+                              title: Text(
                                 'Prescription',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                               subtitle: Text(
                                 '${DateFormat('MMM dd, yyyy').format(prescriptionDate)} • ${medications.length} medications',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
                               ),
                             );
                           }).toList(),
@@ -860,7 +1022,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
                             _selectedIndex = 3;
                           });
                         },
-                        child: const Text('View All Prescriptions'),
+                        child: Text(
+                          'View All Prescriptions',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: Colors.teal,
+                              ),
+                        ),
                       ),
                     ),
                   ],
@@ -873,11 +1040,17 @@ class _PatientDashboardState extends State<PatientDashboard> {
     );
   }
 
-  // FIXED: Appointments tab with proper index
   Widget _buildAppointmentsTab() {
     final user = _auth.currentUser;
     if (user == null) {
-      return const Center(child: Text('Please log in'));
+      return Center(
+        child: Text(
+          'Please log in',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.grey[700],
+              ),
+        ),
+      );
     }
 
     return StreamBuilder<QuerySnapshot>(
@@ -896,14 +1069,27 @@ class _PatientDashboardState extends State<PatientDashboard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[600]),
                 const SizedBox(height: 16),
-                Text('Error: ${snapshot.error}'),
+                Text(
+                  'Error: ${snapshot.error}',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.red[600],
+                      ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {}); // Refresh
+                    setState(() {});
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],
@@ -912,20 +1098,24 @@ class _PatientDashboardState extends State<PatientDashboard> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.calendar_today, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Icon(Icons.calendar_today, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
                 Text(
                   'No appointments scheduled',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Book an appointment with a doctor to get started',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[500],
+                      ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -937,18 +1127,24 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
         return RefreshIndicator(
           onRefresh: () async {
-            setState(() {}); // Refresh
+            setState(() {});
           },
           child: ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: appointments.length,
             itemBuilder: (context, index) {
-              final appointmentData = appointments[index].data() as Map<String, dynamic>;
-              final appointmentDate = DateTime.parse(appointmentData['appointmentTime'] as String);
+              final appointmentData =
+                  appointments[index].data() as Map<String, dynamic>;
+              final appointmentDate =
+                  DateTime.parse(appointmentData['appointmentTime'] as String);
               final status = appointmentData['status'] as String? ?? 'pending';
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16.0),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -958,11 +1154,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            appointmentData['appointmentType'] as String? ?? 'Appointment',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
+                            appointmentData['appointmentType'] as String? ??
+                                'Appointment',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.teal[900],
+                                ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -974,7 +1174,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                   ? Colors.green[100]
                                   : status == 'cancelled'
                                       ? Colors.red[100]
-                                      : Colors.blue[100],
+                                      : Colors.teal[100],
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -986,7 +1186,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                     ? Colors.green[800]
                                     : status == 'cancelled'
                                         ? Colors.red[800]
-                                        : Colors.blue[800],
+                                        : Colors.teal[800],
                               ),
                             ),
                           ),
@@ -999,11 +1199,13 @@ class _PatientDashboardState extends State<PatientDashboard> {
                               size: 16, color: Colors.grey[600]),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('MMM dd, yyyy')
-                                .format(appointmentDate),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                            ),
+                            DateFormat('MMM dd, yyyy').format(appointmentDate),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
                           ),
                           const SizedBox(width: 16),
                           Icon(Icons.access_time,
@@ -1011,9 +1213,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           const SizedBox(width: 4),
                           Text(
                             DateFormat('hh:mm a').format(appointmentDate),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
                           ),
                         ],
                       ),
@@ -1026,9 +1231,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
                             const SizedBox(width: 4),
                             Text(
                               'Dr. ${appointmentData['doctorName']}',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           ],
                         ),
@@ -1038,9 +1246,12 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         const SizedBox(height: 16),
                         Text(
                           'Notes: ${appointmentData['notes']}',
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: Colors.grey[700],
+                              ),
                         ),
                       ],
                     ],
@@ -1054,11 +1265,17 @@ class _PatientDashboardState extends State<PatientDashboard> {
     );
   }
 
-  // FIXED: Prescriptions tab with proper index
   Widget _buildPrescriptionsTab() {
     final user = _auth.currentUser;
     if (user == null) {
-      return const Center(child: Text('Please log in'));
+      return Center(
+        child: Text(
+          'Please log in',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.grey[700],
+              ),
+        ),
+      );
     }
 
     return StreamBuilder<QuerySnapshot>(
@@ -1077,14 +1294,27 @@ class _PatientDashboardState extends State<PatientDashboard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[600]),
                 const SizedBox(height: 16),
-                Text('Error: ${snapshot.error}'),
+                Text(
+                  'Error: ${snapshot.error}',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.red[600],
+                      ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {}); // Refresh
+                    setState(() {});
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],
@@ -1093,20 +1323,24 @@ class _PatientDashboardState extends State<PatientDashboard> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.medical_services, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Icon(Icons.medical_services, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
                 Text(
                   'No prescriptions available',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Prescriptions from doctors will appear here',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[500],
+                      ),
                 ),
               ],
             ),
@@ -1117,18 +1351,24 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
         return RefreshIndicator(
           onRefresh: () async {
-            setState(() {}); // Refresh
+            setState(() {});
           },
           child: ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: prescriptions.length,
             itemBuilder: (context, index) {
-              final prescriptionData = prescriptions[index].data() as Map<String, dynamic>;
-              final prescriptionDate = DateTime.parse(prescriptionData['date'] as String);
+              final prescriptionData =
+                  prescriptions[index].data() as Map<String, dynamic>;
+              final prescriptionDate =
+                  DateTime.parse(prescriptionData['date'] as String);
               final medications = prescriptionData['medications'] as List? ?? [];
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16.0),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -1136,21 +1376,26 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     children: [
                       Text(
                         'Prescription - ${DateFormat('MMM dd, yyyy').format(prescriptionDate)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.teal[900],
+                            ),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         'Medications:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       if (medications.isEmpty)
-                        const Text('No medications listed'),
+                        Text(
+                          'No medications listed',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                        ),
                       ...medications.map((medication) {
                         final med = medication as Map<String, dynamic>;
                         return Padding(
@@ -1160,34 +1405,75 @@ class _PatientDashboardState extends State<PatientDashboard> {
                             children: [
                               Text(
                                 med['name'] as String? ?? 'Not specified',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                               const SizedBox(height: 4),
-                              Text('Dosage: ${med['dosage'] as String? ?? 'Not specified'}'),
-                              Text('Frequency: ${med['frequency'] as String? ?? 'Not specified'}'),
-                              Text('Duration: ${med['duration'] as String? ?? 'Not specified'}'),
+                              Text(
+                                'Dosage: ${med['dosage'] as String? ?? 'Not specified'}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                              ),
+                              Text(
+                                'Frequency: ${med['frequency'] as String? ?? 'Not specified'}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                              ),
+                              Text(
+                                'Duration: ${med['duration'] as String? ?? 'Not specified'}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                              ),
                               if (med['notes'] != null &&
                                   (med['notes'] as String).isNotEmpty) ...[
                                 const SizedBox(height: 4),
-                                Text('Notes: ${med['notes']}'),
+                                Text(
+                                  'Notes: ${med['notes']}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.grey[600],
+                                      ),
+                                ),
                               ],
                             ],
                           ),
                         );
                       }).toList(),
                       if (prescriptionData['instructions'] != null &&
-                          (prescriptionData['instructions'] as String).isNotEmpty) ...[
+                          (prescriptionData['instructions'] as String)
+                              .isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Instructions:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         const SizedBox(height: 4),
-                        Text(prescriptionData['instructions'] as String),
+                        Text(
+                          prescriptionData['instructions'] as String,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[700],
+                              ),
+                        ),
                       ],
                     ],
                   ),
@@ -1200,11 +1486,17 @@ class _PatientDashboardState extends State<PatientDashboard> {
     );
   }
 
-  // FIXED: Notifications tab with proper index
   Widget _buildNotificationsTab() {
     final user = _auth.currentUser;
     if (user == null) {
-      return const Center(child: Text('Please log in'));
+      return Center(
+        child: Text(
+          'Please log in',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.grey[700],
+              ),
+        ),
+      );
     }
 
     return StreamBuilder<QuerySnapshot>(
@@ -1219,14 +1511,27 @@ class _PatientDashboardState extends State<PatientDashboard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[600]),
                 const SizedBox(height: 16),
-                Text('Error: ${snapshot.error}'),
+                Text(
+                  'Error: ${snapshot.error}',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.red[600],
+                      ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {}); // Refresh
+                    setState(() {});
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],
@@ -1235,21 +1540,26 @@ class _PatientDashboardState extends State<PatientDashboard> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.notifications_none, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Icon(Icons.notifications_none,
+                    size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
                 Text(
                   'No notifications yet',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'You\'ll see notifications here when doctors\nsend prescriptions or diet plans',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[500],
+                      ),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -1260,15 +1570,16 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
         return RefreshIndicator(
           onRefresh: () async {
-            setState(() {}); // Refresh
+            setState(() {});
           },
           child: ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notificationDoc = notifications[index];
-              final notificationData = notificationDoc.data() as Map<String, dynamic>;
-              
+              final notificationData =
+                  notificationDoc.data() as Map<String, dynamic>;
+
               final notification = AppNotification.fromMap(
                 notificationData,
                 notificationDoc.id,
@@ -1278,14 +1589,18 @@ class _PatientDashboardState extends State<PatientDashboard> {
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 8.0),
-                color: notification.isRead ? null : Colors.blue[50],
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                color: notification.isRead ? Colors.white : Colors.teal[50],
                 child: InkWell(
                   onTap: () {
-                    // Mark as read when tapped
                     if (!notification.isRead) {
                       NotificationService.markAsRead(notification.id);
                     }
                   },
+                  borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -1297,7 +1612,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: notification.type == 'appointment'
-                                    ? Colors.blue[100]
+                                    ? Colors.teal[100]
                                     : notification.type == 'prescription'
                                         ? Colors.green[100]
                                         : notification.type == 'diet_plan'
@@ -1314,7 +1629,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                             ? Icons.restaurant_menu
                                             : Icons.notifications,
                                 color: notification.type == 'appointment'
-                                    ? Colors.blue
+                                    ? Colors.teal
                                     : notification.type == 'prescription'
                                         ? Colors.green
                                         : notification.type == 'diet_plan'
@@ -1330,20 +1645,25 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                 children: [
                                   Text(
                                     notification.title,
-                                    style: TextStyle(
-                                      fontWeight: notification.isRead 
-                                          ? FontWeight.normal 
-                                          : FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: notification.isRead
+                                              ? FontWeight.normal
+                                              : FontWeight.bold,
+                                          color: Colors.teal[900],
+                                        ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     notification.message,
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontSize: 14,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Colors.grey[700],
+                                        ),
                                   ),
                                 ],
                               ),
@@ -1353,17 +1673,22 @@ class _PatientDashboardState extends State<PatientDashboard> {
                               children: [
                                 Text(
                                   DateFormat('MMM dd').format(notificationDate),
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Colors.grey[600],
+                                      ),
                                 ),
                                 Text(
-                                  DateFormat('hh:mm a').format(notificationDate),
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
+                                  DateFormat('hh:mm a')
+                                      .format(notificationDate),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Colors.grey[600],
+                                      ),
                                 ),
                                 if (!notification.isRead) ...[
                                   const SizedBox(height: 4),
@@ -1371,7 +1696,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                     width: 8,
                                     height: 8,
                                     decoration: const BoxDecoration(
-                                      color: Colors.blue,
+                                      color: Colors.teal,
                                       shape: BoxShape.circle,
                                     ),
                                   ),

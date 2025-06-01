@@ -24,7 +24,7 @@ class PatientDetailsPage extends StatefulWidget {
 class _PatientDetailsPageState extends State<PatientDetailsPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   Map<String, dynamic>? _patientData;
   bool _isLoading = true;
 
@@ -43,7 +43,8 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
 
   void _loadPatientDetails() async {
     try {
-      final doc = await _firestore.collection('patients').doc(widget.patientId).get();
+      final doc =
+          await _firestore.collection('patients').doc(widget.patientId).get();
       if (doc.exists) {
         setState(() {
           _patientData = doc.data();
@@ -66,7 +67,9 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         patientName: widget.patientName,
         onPrescriptionCreated: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Prescription created for ${widget.patientName}')),
+            SnackBar(
+                content:
+                    Text('Prescription created for ${widget.patientName}')),
           );
         },
       ),
@@ -81,7 +84,8 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         patientName: widget.patientName,
         onDietPlanCreated: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Diet plan created for ${widget.patientName}')),
+            SnackBar(
+                content: Text('Diet plan created for ${widget.patientName}')),
           );
         },
       ),
@@ -96,22 +100,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         backgroundColor: Colors.green[50],
         actions: [
           // View Complete Profile Button
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CompletePatientProfile(
-                    patientId: widget.patientId,
-                    patientName: widget.patientName,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.person),
-            tooltip: 'Complete Profile',
-          ),
-          // View Diet & Strength Details Button
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -172,35 +160,35 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                       // Patient Header
                       _buildPatientHeader(),
                       const SizedBox(height: 24),
-                      
+
                       // Quick Actions
                       _buildQuickActions(),
                       const SizedBox(height: 24),
-                      
+
                       // Assessment Status
                       _buildAssessmentStatus(),
                       const SizedBox(height: 24),
-                      
+
                       // Personal Information
                       _buildPersonalInfo(),
                       const SizedBox(height: 24),
-                      
+
                       // Medical Information
                       _buildMedicalInfo(),
                       const SizedBox(height: 24),
-                      
+
                       // Emergency Contact
                       _buildEmergencyContact(),
                       const SizedBox(height: 24),
-                      
+
                       // Medical History
                       _buildMedicalHistory(),
                       const SizedBox(height: 24),
-                      
+
                       // Recent Prescriptions
                       _buildRecentPrescriptions(),
                       const SizedBox(height: 24),
-                      
+
                       // Recent Diet Plans
                       _buildRecentDietPlans(),
                     ],
@@ -376,28 +364,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CompletePatientProfile(
-                            patientId: widget.patientId,
-                            patientName: widget.patientName,
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.person),
-                    label: const Text('Full Profile'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(width: 12),
@@ -433,7 +399,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
     final hasDetailedAssessment = _patientData!['dietaryHabits'] != null ||
         _patientData!['muscleStrength'] != null ||
         _patientData!['applicationUsability'] != null;
-    
+
     final hasSimpleAssessment = _patientData!['dietType'] != null ||
         _patientData!['exerciseLevel'] != null ||
         _patientData!['healthGoal'] != null;
@@ -529,15 +495,19 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             ),
             const SizedBox(height: 16),
             _buildInfoRow('Full Name', _getStringValue(_patientData!['name'])),
-            _buildInfoRow('Date of Birth', _getStringValue(_patientData!['dateOfBirth'])),
+            _buildInfoRow(
+                'Date of Birth', _getStringValue(_patientData!['dateOfBirth'])),
             _buildInfoRow('Age', _getStringValue(_patientData!['age'])),
             _buildInfoRow('Gender', _getStringValue(_patientData!['gender'])),
-            _buildInfoRow('Marital Status', _getStringValue(_patientData!['maritalStatus'])),
-            _buildInfoRow('Living Situation', _getStringValue(_patientData!['livingSituation'])),
+            _buildInfoRow('Marital Status',
+                _getStringValue(_patientData!['maritalStatus'])),
+            _buildInfoRow('Living Situation',
+                _getStringValue(_patientData!['livingSituation'])),
             _buildInfoRow('Phone', _getStringValue(_patientData!['phone'])),
             _buildInfoRow('Email', _getStringValue(_patientData!['email'])),
             _buildInfoRow('Address', _getStringValue(_patientData!['address'])),
-            _buildInfoRow('Blood Group', _getStringValue(_patientData!['bloodGroup'])),
+            _buildInfoRow(
+                'Blood Group', _getStringValue(_patientData!['bloodGroup'])),
           ],
         ),
       ),
@@ -559,9 +529,12 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Contact Name', _getStringValue(_patientData!['emergencyContactName'])),
-            _buildInfoRow('Relationship', _getStringValue(_patientData!['emergencyContactRelationship'])),
-            _buildInfoRow('Phone Number', _getStringValue(_patientData!['emergencyContactPhone'])),
+            _buildInfoRow('Contact Name',
+                _getStringValue(_patientData!['emergencyContactName'])),
+            _buildInfoRow('Relationship',
+                _getStringValue(_patientData!['emergencyContactRelationship'])),
+            _buildInfoRow('Phone Number',
+                _getStringValue(_patientData!['emergencyContactPhone'])),
           ],
         ),
       ),
@@ -583,12 +556,18 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Medical History', _getStringValue(_patientData!['medicalHistory'])),
-            _buildInfoRow('Current Medications', _getStringValue(_patientData!['currentMedications'])),
-            _buildInfoRow('Allergies', _getStringValue(_patientData!['allergies'])),
-            _buildInfoRow('Chronic Conditions', _getStringValue(_patientData!['chronicConditions'])),
-            _buildInfoRow('Previous Surgeries', _getStringValue(_patientData!['previousSurgeries'])),
-            _buildInfoRow('Family Medical History', _getStringValue(_patientData!['familyMedicalHistory'])),
+            _buildInfoRow('Medical History',
+                _getStringValue(_patientData!['medicalHistory'])),
+            _buildInfoRow('Current Medications',
+                _getStringValue(_patientData!['currentMedications'])),
+            _buildInfoRow(
+                'Allergies', _getStringValue(_patientData!['allergies'])),
+            _buildInfoRow('Chronic Conditions',
+                _getStringValue(_patientData!['chronicConditions'])),
+            _buildInfoRow('Previous Surgeries',
+                _getStringValue(_patientData!['previousSurgeries'])),
+            _buildInfoRow('Family Medical History',
+                _getStringValue(_patientData!['familyMedicalHistory'])),
           ],
         ),
       ),
@@ -610,7 +589,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Appointments Count
             StreamBuilder<QuerySnapshot>(
               stream: _firestore
@@ -622,7 +601,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 return _buildInfoRow('Total Appointments', count.toString());
               },
             ),
-            
+
             // Prescriptions Count
             StreamBuilder<QuerySnapshot>(
               stream: _firestore
@@ -634,7 +613,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 return _buildInfoRow('Total Prescriptions', count.toString());
               },
             ),
-            
+
             // Diet Plans Count
             StreamBuilder<QuerySnapshot>(
               stream: _firestore
@@ -677,7 +656,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Text('No prescriptions found');
                 }
-                
+
                 final docs = snapshot.data!.docs;
                 docs.sort((a, b) {
                   final aData = a.data() as Map<String, dynamic>;
@@ -686,20 +665,20 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   final bDate = bData['date'] ?? '';
                   return bDate.compareTo(aDate);
                 });
-                
+
                 return Column(
                   children: docs.take(5).map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     final dateStr = data['date'] ?? '';
                     final medications = data['medications'] as List? ?? [];
-                    
+
                     DateTime? date;
                     try {
                       date = DateTime.parse(dateStr);
                     } catch (e) {
                       date = null;
                     }
-                    
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: Colors.blue[50],
@@ -712,10 +691,11 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  date != null 
+                                  date != null
                                       ? DateFormat('MMM dd, yyyy').format(date)
                                       : 'Date not available',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 Text(
                                   '${medications.length} medications',
@@ -775,7 +755,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Text('No diet plans found');
                 }
-                
+
                 final docs = snapshot.data!.docs;
                 docs.sort((a, b) {
                   final aData = a.data() as Map<String, dynamic>;
@@ -784,20 +764,20 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   final bDate = bData['startDate'] ?? '';
                   return bDate.compareTo(aDate);
                 });
-                
+
                 return Column(
                   children: docs.take(3).map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     final startDateStr = data['startDate'] ?? '';
                     final meals = data['meals'] as List? ?? [];
-                    
+
                     DateTime? startDate;
                     try {
                       startDate = DateTime.parse(startDateStr);
                     } catch (e) {
                       startDate = null;
                     }
-                    
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: Colors.green[50],
@@ -810,10 +790,12 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  startDate != null 
-                                      ? DateFormat('MMM dd, yyyy').format(startDate)
+                                  startDate != null
+                                      ? DateFormat('MMM dd, yyyy')
+                                          .format(startDate)
                                       : 'Date not available',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 Text(
                                   '${meals.length} meals',
@@ -882,7 +864,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
       final birthDate = DateTime.parse(dateOfBirth);
       final today = DateTime.now();
       int age = today.year - birthDate.year;
-      if (today.month < birthDate.month || 
+      if (today.month < birthDate.month ||
           (today.month == birthDate.month && today.day < birthDate.day)) {
         age--;
       }
@@ -943,8 +925,9 @@ class _PrescriptionDialogState extends State<PrescriptionDialog> {
       if (user == null) return;
 
       // Get doctor name
-      final doctorDoc = await _firestore.collection('doctors').doc(user.uid).get();
-      final doctorName = doctorDoc.exists 
+      final doctorDoc =
+          await _firestore.collection('doctors').doc(user.uid).get();
+      final doctorName = doctorDoc.exists
           ? (doctorDoc.data() as Map<String, dynamic>)['fullName'] ?? 'Doctor'
           : 'Doctor';
 
@@ -1113,8 +1096,9 @@ class _DietPlanDialogState extends State<DietPlanDialog> {
       if (user == null) return;
 
       // Get doctor name
-      final doctorDoc = await _firestore.collection('doctors').doc(user.uid).get();
-      final doctorName = doctorDoc.exists 
+      final doctorDoc =
+          await _firestore.collection('doctors').doc(user.uid).get();
+      final doctorName = doctorDoc.exists
           ? (doctorDoc.data() as Map<String, dynamic>)['fullName'] ?? 'Doctor'
           : 'Doctor';
 
@@ -1124,7 +1108,8 @@ class _DietPlanDialogState extends State<DietPlanDialog> {
         'patientId': widget.patientId,
         'patientName': widget.patientName,
         'startDate': DateTime.now().toIso8601String(),
-        'endDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+        'endDate':
+            DateTime.now().add(const Duration(days: 30)).toIso8601String(),
         'meals': [
           {
             'type': 'Breakfast',
