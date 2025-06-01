@@ -1,11 +1,9 @@
+import 'package:doctor_app/pages/patient/patient_personal_data_form.dart';
 import 'package:flutter/material.dart';
 import 'package:doctor_app/pages/doctor/doctor_dashboard.dart';
 import 'package:doctor_app/pages/patient/patient_dashboard.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:doctor_app/pages/patient/patient_personal_data_form.dart';
-// Remove this line
-// import 'package:doctor_app/pages/patient/patient_comprehensive_registration.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,12 +27,13 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     // Set default values for demo
-    _emailController.text = _isDoctor ? 'doctor@example.com' : 'patient@example.com';
-    _passwordController.text = 'password';
+    _emailController.text =
+        _isDoctor ? 'abdullahh@gmail.com' : 'mahad@gmail.com';
+    _passwordController.text = 'Abdullah';
   }
 
   @override
-  void dispose() {
+  void dispose() { 
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -99,14 +98,16 @@ class _LoginPageState extends State<LoginPage> {
             // Profile is not completed or old version, go to original form flow
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const PatientPersonalDataForm()),
+              MaterialPageRoute(
+                  builder: (context) => const PatientPersonalDataForm()),
             );
           }
         } else {
           // Handle cases where role is not found or invalid
           await _auth.signOut();
           setState(() {
-            _errorMessage = 'User role not found or invalid. Please contact support.';
+            _errorMessage =
+                'User role not found or invalid. Please contact support.';
             _isLoading = false;
           });
         }
@@ -139,134 +140,228 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Log In'),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 32),
-                const Text(
-                  'Welcome Back',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ChoiceChip(
-                      label: const Text('Doctor'),
-                      selected: _isDoctor,
-                      onSelected: (selected) {
-                        setState(() {
-                          _isDoctor = true;
-                          _emailController.text = 'doctor@example.com';
-                          _passwordController.text = 'password';
-                        });
-                      },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue.shade50, Colors.white],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Spacer(flex: 1),
+                  Text(
+                    'Welcome Back',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade800,
+                      letterSpacing: 1.2,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 8.0,
+                          color: Colors.blue.shade100,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    ChoiceChip(
-                      label: const Text('Patient'),
-                      selected: !_isDoctor,
-                      onSelected: (selected) {
-                        setState(() {
-                          _isDoctor = false;
-                          _emailController.text = 'patient@example.com';
-                          _passwordController.text = 'password';
-                        });
-                      },
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _ChoiceChip(
+                        label: 'Doctor',
+                        selected: _isDoctor,
+                        onSelected: (selected) {
+                          setState(() {
+                            _isDoctor = true;
+                            _emailController.text = 'abdullah@gmail.com';
+                            _passwordController.text = 'Abdullah@2310';
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      _ChoiceChip(
+                        label: 'Patient',
+                        selected: !_isDoctor,
+                        onSelected: (selected) {
+                          setState(() {
+                            _isDoctor = false;
+                            _emailController.text = 'mahad@gmail.com';
+                            _passwordController.text = 'Abdullah@2310';
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.blue.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: Colors.blue.shade700, width: 2),
+                      ),
+                      prefixIcon:
+                          Icon(Icons.email, color: Colors.blue.shade700),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.8),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.blue.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: Colors.blue.shade700, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.lock, color: Colors.blue.shade700),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.8),
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
                   ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 8),
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
+                  const SizedBox(height: 12),
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: Colors.red.shade600,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _signIn,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade700,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 5,
+                        shadowColor: Colors.blue.shade200,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Log In',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
                     child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(
-                        color: Colors.red,
+                      'Demo Credentials:\nDoctor: abdullah@gmail.com\nPatient: mahad@gmail.com\nPassword: Abdullah@2310',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
                   ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _signIn,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text('Log In'),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Center(
-                  child: Text(
-                    'Demo Credentials:\nDoctor: doctor@example.com\nPatient: patient@example.com\nPassword: password',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
+                  const Spacer(flex: 2),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ChoiceChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final ValueChanged<bool> onSelected;
+
+  const _ChoiceChip({
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: selected ? Colors.white : Colors.blue.shade700,
+        ),
+      ),
+      selected: selected,
+      onSelected: onSelected,
+      selectedColor: Colors.blue.shade700,
+      backgroundColor: Colors.white.withOpacity(0.8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.blue.shade200),
+      ),
+      elevation: selected ? 5 : 2,
+      shadowColor: Colors.blue.shade100,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
     );
   }
 }

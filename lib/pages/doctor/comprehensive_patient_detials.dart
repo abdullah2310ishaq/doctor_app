@@ -160,13 +160,18 @@ class _ComprehensivePatientDetailsState
               // Personal Information
               _buildPDFSection('Personal Information', [
                 'Full Name: ${_safeToString(_patientData!['name'])}',
+                'Date of Birth: ${_safeToString(_patientData!['dateOfBirth'])}',
                 'Age: ${_safeToString(_patientData!['age'])}',
                 'Gender: ${_safeToString(_patientData!['gender'])}',
-                'Blood Group: ${_safeToString(_patientData!['bloodGroup'])}',
+                'Marital Status: ${_safeToString(_patientData!['maritalStatus'])}',
+                'Living Situation: ${_safeToString(_patientData!['livingSituation'])}',
                 'Phone: ${_safeToString(_patientData!['phone'])}',
-                'Address: ${_safeToString(_patientData!['address'])}',
-                'Emergency Contact: ${_safeToString(_patientData!['emergencyContact'])}',
                 'Email: ${_safeToString(_patientData!['email'])}',
+                'Address: ${_safeToString(_patientData!['address'])}',
+                'Blood Group: ${_safeToString(_patientData!['bloodGroup'])}',
+                'Emergency Contact Name: ${_safeToString(_patientData!['emergencyContactName'])}',
+                'Emergency Contact Relationship: ${_safeToString(_patientData!['emergencyContactRelationship'])}',
+                'Emergency Contact Phone: ${_safeToString(_patientData!['emergencyContactPhone'])}',
               ]),
 
               pw.SizedBox(height: 16),
@@ -186,29 +191,6 @@ class _ComprehensivePatientDetailsState
                 'Tuberculosis History: ${_safeToString(medicalHistory?['tuberculosisHistory'])}',
                 'Mental Health Care: ${_safeToString(medicalHistory?['mentalHealthClinicianCare'])}',
                 'Restricted Eating History: ${_safeToString(medicalHistory?['restrictedEatingHistory'])}',
-              ]),
-
-              pw.SizedBox(height: 16),
-
-              // Family History
-              _buildPDFSection('Family History', [
-                'Family Medical History: ${_safeToString(familyHistory?['familyMedicalHistory'])}',
-                'Genetic Conditions: ${_safeToString(familyHistory?['geneticConditions'])}',
-                'Family Cancer History: ${_safeToString(familyHistory?['familyCancerHistory'])}',
-                'Family Heart Disease: ${_safeToString(familyHistory?['familyHeartDisease'])}',
-                'Family Diabetes: ${_safeToString(familyHistory?['familyDiabetes'])}',
-                'Family Mental Health: ${_safeToString(familyHistory?['familyMentalHealth'])}',
-              ]),
-
-              pw.SizedBox(height: 16),
-
-              // Activity Information
-              _buildPDFSection('Activity Information', [
-                'Physical Activity Level: ${_safeToString(activityData?['physicalActivityLevel'])}',
-                'Exercise Frequency: ${_safeToString(activityData?['exerciseFrequency'])}',
-                'Exercise Types: ${_safeToString(activityData?['exerciseTypes'])}',
-                'Sports Participation: ${_safeToString(activityData?['sportsParticipation'])}',
-                'Physical Limitations: ${_safeToString(activityData?['physicalLimitations'])}',
               ]),
 
               pw.SizedBox(height: 16),
@@ -634,15 +616,29 @@ class _ComprehensivePatientDetailsState
     return Column(
       children: [
         _buildDetailRow('Full Name', _safeToString(_patientData!['name'])),
+        _buildDetailRow(
+            'Date of Birth', _safeToString(_patientData!['dateOfBirth'])),
         _buildDetailRow('Age', _safeToString(_patientData!['age'])),
         _buildDetailRow('Gender', _safeToString(_patientData!['gender'])),
         _buildDetailRow(
-            'Blood Group', _safeToString(_patientData!['bloodGroup'])),
+            'Marital Status', _safeToString(_patientData!['maritalStatus'])),
+        _buildDetailRow('Living Situation',
+            _safeToString(_patientData!['livingSituation'])),
         _buildDetailRow('Phone Number', _safeToString(_patientData!['phone'])),
-        _buildDetailRow('Address', _safeToString(_patientData!['address'])),
-        _buildDetailRow('Emergency Contact',
-            _safeToString(_patientData!['emergencyContact'])),
         _buildDetailRow('Email', _safeToString(_patientData!['email'])),
+        _buildDetailRow('Address', _safeToString(_patientData!['address'])),
+        _buildDetailRow(
+            'Blood Group', _safeToString(_patientData!['bloodGroup'])),
+        const SizedBox(height: 16),
+        const Text('Emergency Contact:',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 8),
+        _buildDetailRow('Contact Name',
+            _safeToString(_patientData!['emergencyContactName'])),
+        _buildDetailRow('Relationship',
+            _safeToString(_patientData!['emergencyContactRelationship'])),
+        _buildDetailRow('Contact Phone',
+            _safeToString(_patientData!['emergencyContactPhone'])),
       ],
     );
   }
@@ -997,7 +993,7 @@ class _ComprehensivePatientDetailsState
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.blue[800],
+          color: Colors.blue,
         ),
       ),
     );

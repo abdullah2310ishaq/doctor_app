@@ -52,7 +52,8 @@ class _PatientRegistrationState extends State<PatientRegistration> {
     });
 
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
@@ -65,7 +66,7 @@ class _PatientRegistrationState extends State<PatientRegistration> {
           'role': 'patient',
           'fullName': _nameController.text.trim(),
           'email': _emailController.text.trim(),
-          'profileCompleted': true, // Change this from false to true
+          'profileCompleted': true,
           'createdAt': FieldValue.serverTimestamp(),
         });
       }
@@ -73,16 +74,15 @@ class _PatientRegistrationState extends State<PatientRegistration> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Registration successful! Welcome to the app.'), // Update message
+          content: Text('Registration completed'),
         ),
       );
 
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const PatientDashboard()), // Go directly to dashboard
+        MaterialPageRoute(builder: (context) => const LoginPage()),
       );
-
     } on FirebaseAuthException catch (e) {
       String message;
       if (e.code == 'weak-password') {
@@ -236,7 +236,8 @@ class _PatientRegistrationState extends State<PatientRegistration> {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
                     );
                   },
                   child: const Text('Already have an account? Log In'),

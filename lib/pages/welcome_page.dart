@@ -9,98 +9,149 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
-              const Icon(
-                Icons.medical_services_rounded,
-                size: 100,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'MediConnect',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue.shade50, Colors.white],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Spacer(flex: 2),
+                Hero(
+                  tag: 'app_logo',
+                  child: Icon(
+                    Icons.medical_services_rounded,
+                    size: 120,
+                    color: Colors.blue.shade700,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 10.0,
+                        color: Colors.blue.shade200,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Connecting Doctors and Patients',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
+                const SizedBox(height: 24),
+                Text(
+                  'MediConnect',
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue.shade800,
+                    letterSpacing: 1.2,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 8.0,
+                        color: Colors.blue.shade100,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(),
-              const Text(
-                'I am a:',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 16),
+                Text(
+                  'Connecting Doctors and Patients Seamlessly',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey.shade600,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: _UserTypeCard(
-                      title: 'Doctor',
-                      icon: Icons.medical_information,
-                      onTap: () {
+                const Spacer(flex: 1),
+                Text(
+                  'I am a:',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue.shade900,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _UserTypeCard(
+                        title: 'Doctor',
+                        icon: Icons.medical_information,
+                        gradientColors: [
+                          Colors.blue.shade400,
+                          Colors.blue.shade700
+                        ],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DoctorRegistration(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _UserTypeCard(
+                        title: 'Patient',
+                        icon: Icons.person,
+                        gradientColors: [
+                          Colors.teal.shade300,
+                          Colors.teal.shade600
+                        ],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PatientRegistration(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Already have an account? ',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const DoctorRegistration(),
+                            builder: (context) => const LoginPage(),
                           ),
                         );
                       },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _UserTypeCard(
-                      title: 'Patient',
-                      icon: Icons.person,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PatientRegistration(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Already have an account?'),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
+                      child: Text(
+                        'Log In',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade700,
                         ),
-                      );
-                    },
-                    child: const Text('Log In'),
-                  ),
-                ],
-              ),
-              const Spacer(),
-            ],
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(flex: 2),
+              ],
+            ),
           ),
         ),
       ),
@@ -111,11 +162,13 @@ class WelcomePage extends StatelessWidget {
 class _UserTypeCard extends StatelessWidget {
   final String title;
   final IconData icon;
+  final List<Color> gradientColors;
   final VoidCallback onTap;
 
   const _UserTypeCard({
     required this.title,
     required this.icon,
+    required this.gradientColors,
     required this.onTap,
   });
 
@@ -123,26 +176,47 @@ class _UserTypeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.blue.shade200),
-          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.shade100.withOpacity(0.5),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 48,
-              color: Colors.blue,
+              size: 56,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  blurRadius: 8.0,
+                  color: Colors.black.withOpacity(0.2),
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ],
