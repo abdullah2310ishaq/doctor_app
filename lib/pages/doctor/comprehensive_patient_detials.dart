@@ -315,6 +315,11 @@ class _ComprehensivePatientDetailsState extends State<ComprehensivePatientDetail
         _buildDetailRow('Marital Status', _safeToString(_patientData!['maritalStatus'])),
         _buildDetailRow('Occupation', _safeToString(_patientData!['occupation'])),
         _buildDetailRow('Education Level', _safeToString(_patientData!['educationLevel'])),
+        _buildDetailRow('Nationality', _safeToString(_patientData!['nationality'])),
+        _buildDetailRow('Religion', _safeToString(_patientData!['religion'])),
+        _buildDetailRow('Language', _safeToString(_patientData!['language'])),
+        _buildDetailRow('Insurance Provider', _safeToString(_patientData!['insuranceProvider'])),
+        _buildDetailRow('Insurance Number', _safeToString(_patientData!['insuranceNumber'])),
       ],
     );
   }
@@ -333,6 +338,12 @@ class _ComprehensivePatientDetailsState extends State<ComprehensivePatientDetail
         _buildDetailRow('Smoking Status', _safeToString(_patientData!['smokingStatus'])),
         _buildDetailRow('Alcohol Consumption', _safeToString(_patientData!['alcoholConsumption'])),
         _buildDetailRow('Drug Use History', _safeToString(_patientData!['drugUseHistory'])),
+        _buildDetailRow('Blood Pressure', _safeToString(_patientData!['bloodPressure'])),
+        _buildDetailRow('Heart Rate', _safeToString(_patientData!['heartRate'])),
+        _buildDetailRow('Cholesterol Level', _safeToString(_patientData!['cholesterolLevel'])),
+        _buildDetailRow('Blood Sugar Level', _safeToString(_patientData!['bloodSugarLevel'])),
+        _buildDetailRow('Vision Problems', _safeToString(_patientData!['visionProblems'])),
+        _buildDetailRow('Hearing Problems', _safeToString(_patientData!['hearingProblems'])),
       ],
     );
   }
@@ -367,6 +378,11 @@ class _ComprehensivePatientDetailsState extends State<ComprehensivePatientDetail
         _buildDetailRow('Social Support', _safeToString(_patientData!['socialSupport'])),
         _buildDetailRow('Hobbies', _safeToString(_patientData!['hobbies'])),
         _buildDetailRow('Travel History', _safeToString(_patientData!['travelHistory'])),
+        _buildDetailRow('Diet Preferences', _safeToString(_patientData!['dietPreferences'])),
+        _buildDetailRow('Smoking History', _safeToString(_patientData!['smokingHistory'])),
+        _buildDetailRow('Alcohol History', _safeToString(_patientData!['alcoholHistory'])),
+        _buildDetailRow('Substance Use', _safeToString(_patientData!['substanceUse'])),
+        _buildDetailRow('Environmental Exposures', _safeToString(_patientData!['environmentalExposures'])),
       ],
     );
   }
@@ -762,7 +778,7 @@ class _ComprehensivePatientDetailsState extends State<ComprehensivePatientDetail
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.blue[800],
+          color: Colors.black87,
         ),
       ),
     );
