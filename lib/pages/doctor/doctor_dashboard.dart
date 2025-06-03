@@ -38,7 +38,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
       final user = _auth.currentUser;
       if (user != null) {
         // Fetch doctor data from Firestore
-        final doctorDoc = await _firestore.collection('doctors').doc(user.uid).get();
+        final doctorDoc =
+            await _firestore.collection('doctors').doc(user.uid).get();
         if (doctorDoc.exists) {
           final data = doctorDoc.data() as Map<String, dynamic>;
           setState(() {
@@ -183,11 +184,13 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             padding: const EdgeInsets.all(16.0),
             itemCount: patients.length,
             itemBuilder: (context, index) {
-              final patientData = patients[index].data() as Map<String, dynamic>;
+              final patientData =
+                  patients[index].data() as Map<String, dynamic>;
               final patientId = patients[index].id;
 
               // Skip if this is a doctor account
-              if (patientData['userType'] == 'doctor' || patientData['role'] == 'doctor') {
+              if (patientData['userType'] == 'doctor' ||
+                  patientData['role'] == 'doctor') {
                 return const SizedBox.shrink();
               }
 
@@ -200,7 +203,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       MaterialPageRoute(
                         builder: (context) => PatientDetailsPage(
                           patientId: patientId,
-                          patientName: patientData['fullName'] ?? 'Unknown Patient',
+                          patientName:
+                              patientData['fullName'] ?? 'Unknown Patient',
                         ),
                       ),
                     );
@@ -216,7 +220,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                               radius: 30,
                               backgroundColor: Colors.green[100],
                               child: Text(
-                                patientData['fullName']?.substring(0, 1).toUpperCase() ?? 'P',
+                                patientData['fullName']
+                                        ?.substring(0, 1)
+                                        .toUpperCase() ??
+                                    'P',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -230,7 +237,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    patientData['fullName'] ?? 'Unknown Patient',
+                                    patientData['fullName'] ??
+                                        'Unknown Patient',
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -251,7 +259,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: patientData['profileCompleted'] == true
+                                      color: patientData['profileCompleted'] ==
+                                              true
                                           ? Colors.green[100]
                                           : Colors.orange[100],
                                       borderRadius: BorderRadius.circular(12),
@@ -263,9 +272,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: patientData['profileCompleted'] == true
-                                            ? Colors.green[800]
-                                            : Colors.orange[800],
+                                        color:
+                                            patientData['profileCompleted'] ==
+                                                    true
+                                                ? Colors.green[800]
+                                                : Colors.orange[800],
                                       ),
                                     ),
                                   ),
@@ -275,39 +286,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _createPrescription(
-                                  patientId,
-                                  patientData['fullName'] ?? 'Unknown',
-                                ),
-                                icon: const Icon(Icons.medical_services),
-                                label: const Text('Prescribe'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _createDietPlan(
-                                  patientId,
-                                  patientData['fullName'] ?? 'Unknown',
-                                ),
-                                icon: const Icon(Icons.restaurant_menu),
-                                label: const Text('Diet Plan'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                         const SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
@@ -318,7 +296,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                                 MaterialPageRoute(
                                   builder: (context) => PatientDetailsPage(
                                     patientId: patientId,
-                                    patientName: patientData['fullName'] ?? 'Unknown Patient',
+                                    patientName: patientData['fullName'] ??
+                                        'Unknown Patient',
                                   ),
                                 ),
                               );
@@ -365,7 +344,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       radius: 30,
                       backgroundColor: Colors.blue[100],
                       child: Text(
-                        _doctorName.isNotEmpty ? _doctorName.substring(0, 1).toUpperCase() : 'D',
+                        _doctorName.isNotEmpty
+                            ? _doctorName.substring(0, 1).toUpperCase()
+                            : 'D',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -401,7 +382,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Quick Stats
             Row(
               children: [
@@ -442,7 +423,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Quick Actions Card
             Card(
               child: Padding(
@@ -481,7 +462,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Recent Activity
             const Text(
               'Recent Activity',
@@ -491,7 +472,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             StreamBuilder<QuerySnapshot>(
               stream: _firestore
                   .collection('prescriptions')
@@ -503,16 +484,17 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 if (snapshot.hasError) {
                   return Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Text('Error loading recent activity: ${snapshot.error}'),
+                      child: Text(
+                          'Error loading recent activity: ${snapshot.error}'),
                     ),
                   );
                 }
-                
+
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Card(
                     child: Padding(
@@ -527,21 +509,23 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                     ),
                   );
                 }
-                
+
                 return Column(
                   children: snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
-                    final patientName = data['patientName'] ?? 'Unknown Patient';
+                    final patientName =
+                        data['patientName'] ?? 'Unknown Patient';
                     final medications = data['medications'] as List? ?? [];
                     final createdAt = data['createdAt'] as Timestamp?;
-                    
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
-                        leading: const Icon(Icons.medical_services, color: Colors.blue),
+                        leading: const Icon(Icons.medical_services,
+                            color: Colors.blue),
                         title: Text('Prescription for $patientName'),
                         subtitle: Text(
-                          medications.isNotEmpty 
+                          medications.isNotEmpty
                               ? '${medications.length} medication(s)'
                               : 'No medications',
                         ),
@@ -563,7 +547,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     );
   }
 
-  Widget _buildStatCard(String title, Widget value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, Widget value, IconData icon, Color color) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -610,7 +595,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (snapshot.hasError) {
           return Center(
             child: Column(
@@ -628,7 +613,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             ),
           );
         }
-        
+
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
             child: Column(
@@ -650,7 +635,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             ),
           );
         }
-        
+
         return RefreshIndicator(
           onRefresh: () async {
             // Refresh will happen automatically with StreamBuilder
@@ -661,7 +646,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             itemBuilder: (context, index) {
               final doc = snapshot.data!.docs[index];
               final data = doc.data() as Map<String, dynamic>;
-              
+
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: Padding(
@@ -685,16 +670,19 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                          const Icon(Icons.calendar_today,
+                              size: 16, color: Colors.grey),
                           const SizedBox(width: 8),
                           Text(data['appointmentTime'] ?? 'No time set'),
                           const SizedBox(width: 16),
-                          const Icon(Icons.medical_services, size: 16, color: Colors.grey),
+                          const Icon(Icons.medical_services,
+                              size: 16, color: Colors.grey),
                           const SizedBox(width: 8),
                           Text(data['appointmentType'] ?? 'General'),
                         ],
                       ),
-                      if (data['notes'] != null && data['notes'].toString().isNotEmpty) ...[
+                      if (data['notes'] != null &&
+                          data['notes'].toString().isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
                           'Notes: ${data['notes']}',
@@ -826,8 +814,9 @@ class _PrescriptionDialogState extends State<PrescriptionDialog> {
       if (user == null) return;
 
       // Get doctor name
-      final doctorDoc = await _firestore.collection('doctors').doc(user.uid).get();
-      final doctorName = doctorDoc.exists 
+      final doctorDoc =
+          await _firestore.collection('doctors').doc(user.uid).get();
+      final doctorName = doctorDoc.exists
           ? (doctorDoc.data() as Map<String, dynamic>)['fullName'] ?? 'Doctor'
           : 'Doctor';
 
@@ -996,8 +985,9 @@ class _DietPlanDialogState extends State<DietPlanDialog> {
       if (user == null) return;
 
       // Get doctor name
-      final doctorDoc = await _firestore.collection('doctors').doc(user.uid).get();
-      final doctorName = doctorDoc.exists 
+      final doctorDoc =
+          await _firestore.collection('doctors').doc(user.uid).get();
+      final doctorName = doctorDoc.exists
           ? (doctorDoc.data() as Map<String, dynamic>)['fullName'] ?? 'Doctor'
           : 'Doctor';
 
@@ -1007,7 +997,8 @@ class _DietPlanDialogState extends State<DietPlanDialog> {
         'patientId': widget.patientId,
         'patientName': widget.patientName,
         'startDate': DateTime.now().toIso8601String(),
-        'endDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+        'endDate':
+            DateTime.now().add(const Duration(days: 30)).toIso8601String(),
         'meals': [
           {
             'type': 'Breakfast',

@@ -1,11 +1,11 @@
 import 'package:doctor_app/pages/doctor/comprehensive_patient_detials.dart';
+import 'package:doctor_app/pages/doctor/create_diet.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:doctor_app/pages/doctor/patient_diet_strength_details.dart';
 
-import 'create_diet.dart';
 import 'create_prescription.dart';
 
 class PatientDetailsPage extends StatefulWidget {
@@ -44,7 +44,8 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
 
   void _loadPatientDetails() async {
     try {
-      final doc = await _firestore.collection('patients').doc(widget.patientId).get();
+      final doc =
+          await _firestore.collection('patients').doc(widget.patientId).get();
       if (doc.exists) {
         setState(() {
           _patientData = doc.data();
@@ -68,7 +69,9 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           patientName: widget.patientName,
           onPrescriptionCreated: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Prescription created for ${widget.patientName}')),
+              SnackBar(
+                  content:
+                      Text('Prescription created for ${widget.patientName}')),
             );
           },
         ),
@@ -85,7 +88,8 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           patientName: widget.patientName,
           onDietPlanCreated: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Diet plan created for ${widget.patientName}')),
+              SnackBar(
+                  content: Text('Diet plan created for ${widget.patientName}')),
             );
           },
         ),
@@ -110,21 +114,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           ),
         ),
         actions: [
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => CompletePatientProfile(
-          //           patientId: widget.patientId,
-          //           patientName: widget.patientName,
-          //         ),
-          //       ),
-          //     );
-          //   },
-          //   icon: const Icon(Icons.person, color: Colors.teal),
-          //   tooltip: 'Complete Profile',
-          // ),
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -196,10 +185,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                       _buildAssessmentStatus(),
                       const SizedBox(height: 24),
                       _buildPersonalInfo(),
-                      const SizedBox(height: 24),
-                      _buildMedicalInfo(),
-                      const SizedBox(height: 24),
-                      _buildEmergencyContact(),
                       const SizedBox(height: 24),
                       _buildMedicalHistory(),
                       const SizedBox(height: 24),
@@ -394,32 +379,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Expanded(
-                //   child: ElevatedButton.icon(
-                //     onPressed: () {
-                //       Navigator.push(
-                //         context,
-                //         MaterialPageRoute(
-                //           builder: (context) => CompletePatientProfile(
-                //             patientId: widget.patientId,
-                //             patientName: widget.patientName,
-                //           ),
-                //         ),
-                //       );
-                //     },
-                //     icon: const Icon(Icons.person),
-                //     label: const Text('Full Profile'),
-                //     style: ElevatedButton.styleFrom(
-                //       backgroundColor: Colors.teal,
-                //       foregroundColor: Colors.white,
-                //       padding: const EdgeInsets.symmetric(vertical: 12),
-                //       shape: RoundedRectangleBorder(
-                //         borderRadius: BorderRadius.circular(12),
-                //       ),
-                //       elevation: 2,
-                //     ),
-                //   ),
-                // ),
               ],
             ),
             const SizedBox(height: 12),
@@ -491,24 +450,9 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 Text(
                   'Detailed Assessment: ${hasDetailedAssessment ? "Completed" : "Not Completed"}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: hasDetailedAssessment ? Colors.teal : Colors.red[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  hasSimpleAssessment ? Icons.check_circle : Icons.cancel,
-                  color: hasSimpleAssessment ? Colors.teal : Colors.red[600],
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Basic Assessment: ${hasSimpleAssessment ? "Completed" : "Not Completed"}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: hasSimpleAssessment ? Colors.teal : Colors.red[600],
+                        color: hasDetailedAssessment
+                            ? Colors.teal
+                            : Colors.red[600],
                         fontWeight: FontWeight.w500,
                       ),
                 ),
@@ -568,70 +512,11 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             ),
             const SizedBox(height: 16),
             _buildInfoRow('Full Name', _getStringValue(_patientData!['name'])),
-            _buildInfoRow('Date of Birth', _getStringValue(_patientData!['dateOfBirth'])),
             _buildInfoRow('Age', _getStringValue(_patientData!['age'])),
             _buildInfoRow('Gender', _getStringValue(_patientData!['gender'])),
-            _buildInfoRow('Marital Status', _getStringValue(_patientData!['maritalStatus'])),
-            _buildInfoRow('Living Situation', _getStringValue(_patientData!['livingSituation'])),
             _buildInfoRow('Phone', _getStringValue(_patientData!['phone'])),
             _buildInfoRow('Email', _getStringValue(_patientData!['email'])),
             _buildInfoRow('Address', _getStringValue(_patientData!['address'])),
-            _buildInfoRow('Blood Group', _getStringValue(_patientData!['bloodGroup'])),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmergencyContact() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Emergency Contact',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal[900],
-                  ),
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow('Contact Name', _getStringValue(_patientData!['emergencyContactName'])),
-            _buildInfoRow('Relationship', _getStringValue(_patientData!['emergencyContactRelationship'])),
-            _buildInfoRow('Phone Number', _getStringValue(_patientData!['emergencyContactPhone'])),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMedicalInfo() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Medical Information',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal[900],
-                  ),
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow('Medical History', _getStringValue(_patientData!['medicalHistory'])),
-            _buildInfoRow('Current Medications', _getStringValue(_patientData!['currentMedications'])),
-            _buildInfoRow('Allergies', _getStringValue(_patientData!['allergies'])),
-            _buildInfoRow('Chronic Conditions', _getStringValue(_patientData!['chronicConditions'])),
-            _buildInfoRow('Previous Surgeries', _getStringValue(_patientData!['previousSurgeries'])),
-            _buildInfoRow('Family Medical History', _getStringValue(_patientData!['familyMedicalHistory'])),
           ],
         ),
       ),
@@ -881,7 +766,8 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                               children: [
                                 Text(
                                   startDate != null
-                                      ? DateFormat('MMM dd, yyyy').format(startDate)
+                                      ? DateFormat('MMM dd, yyyy')
+                                          .format(startDate)
                                       : 'Date not available',
                                   style: Theme.of(context)
                                       .textTheme
