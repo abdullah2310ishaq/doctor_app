@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 import 'dart:io';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'exercise_recommendation_page.dart';
 
 class ComprehensivePatientDetails extends StatefulWidget {
   final String patientId;
@@ -60,13 +61,51 @@ class _ComprehensivePatientDetailsState
     if (value is List) return value.isEmpty ? 'None' : value.join(', ');
     if (value is Map)
       return value.entries.map((e) => '${e.key}: ${e.value}').join(', ');
+
+    // Handle timestamp conversion for date of birth
+    if (value is int || value is double) {
+      try {
+        // Check if it's a timestamp in seconds (Firestore timestamp)
+        if (value > 1000000000) {
+          // Likely a timestamp in seconds
+          final date =
+              DateTime.fromMillisecondsSinceEpoch((value * 1000).round());
+          return DateFormat('MMM dd, yyyy').format(date);
+        } else if (value > 1000000000000) {
+          // Likely a timestamp in milliseconds
+          final date = DateTime.fromMillisecondsSinceEpoch(value.round());
+          return DateFormat('MMM dd, yyyy').format(date);
+        }
+      } catch (e) {
+        // If conversion fails, return as string
+        return value.toString();
+      }
+    }
+
     return value.toString();
   }
 
   Future<Map<String, dynamic>?> _generatePDF({bool forSharing = false}) async {
-    if (_patientData == null) return null;
+    if (_patientData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No patient data available for PDF generation'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return null;
+    }
 
     try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Generating PDF report...'),
+          backgroundColor: Colors.teal,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
       final pdf = pw.Document();
 
       final healthLifestyle =
@@ -140,7 +179,7 @@ class _ComprehensivePatientDetailsState
             ),
             pw.SizedBox(height: 20),
             _buildPDFSection('Personal Information', [
-              'Full Name: ${_safeToString(_patientData!['name'])}',
+              'Full Name: ${_safeToString(_patientData!['fullName'] ?? _patientData!['name'])}',
               'Date of Birth: ${_safeToString(_patientData!['dateOfBirth'])}',
               'Age: ${_safeToString(_patientData!['age'])}',
               'Gender: ${_safeToString(_patientData!['gender'])}',
@@ -150,9 +189,11 @@ class _ComprehensivePatientDetailsState
               'Email: ${_safeToString(_patientData!['email'])}',
               'Address: ${_safeToString(_patientData!['address'])}',
               'Blood Group: ${_safeToString(_patientData!['bloodGroup'])}',
-              'Emergency Contact Name: ${_safeToString(_patientData!['emergencyContactName'])}',
-              'Emergency Contact Relationship: ${_safeToString(_patientData!['emergencyContactRelationship'])}',
-              'Emergency Contact Phone: ${_safeToString(_patientData!['emergencyContactPhone'])}',
+              if (_patientData!['emergencyContact'] != null) ...[
+                'Emergency Contact Name: ${_safeToString(_patientData!['emergencyContact']['name'])}',
+                'Emergency Contact Relationship: ${_safeToString(_patientData!['emergencyContact']['relationship'])}',
+                'Emergency Contact Phone: ${_safeToString(_patientData!['emergencyContact']['phone'])}',
+              ],
             ]),
             pw.SizedBox(height: 16),
             _buildPDFSection('Health & Lifestyle Information', [
@@ -242,6 +283,16 @@ class _ComprehensivePatientDetailsState
         final dir = await getTemporaryDirectory();
         final file = File('${dir.path}/$fileName');
         await file.writeAsBytes(pdfBytes);
+
+        if (!mounted) return null;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF saved successfully: $fileName'),
+            backgroundColor: Colors.green[600],
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
         return {'filePath': file.path, 'fileName': fileName};
       } else {
         // Trigger download
@@ -249,6 +300,16 @@ class _ComprehensivePatientDetailsState
           onLayout: (PdfPageFormat format) async => pdfBytes,
           name: fileName,
         );
+
+        if (!mounted) return null;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF downloaded successfully: $fileName'),
+            backgroundColor: Colors.green[600],
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
         return null;
       }
     } catch (e) {
@@ -257,6 +318,7 @@ class _ComprehensivePatientDetailsState
         SnackBar(
           content: Text('Error generating PDF: $e'),
           backgroundColor: Colors.red[600],
+          duration: const Duration(seconds: 3),
         ),
       );
       return null;
@@ -304,36 +366,38 @@ class _ComprehensivePatientDetailsState
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile: ${widget.patientName}'),
-        backgroundColor: Colors.teal[50],
+        backgroundColor: Colors.blue[50],
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.teal[100]!, Colors.teal[50]!],
+              colors: [Colors.blue[100]!, Colors.blue[50]!],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.teal),
+          icon: Icon(Icons.arrow_back, color: Colors.blue[700]),
           onPressed: () => Navigator.pop(context),
         ),
-        // actions: [
-        //   IconButton(
-        //     onPressed: _patientData != null ? _generatePDF : null,
-        //     icon: const Icon(Icons.picture_as_pdf, color: Colors.teal),
-        //     tooltip: 'Download PDF Report',
-        //   ),
-        //   IconButton(
-        //     onPressed: _patientData != null ? () => _showExportOptions() : null,
-        //     icon: const Icon(Icons.share, color: Colors.teal),
-        //     tooltip: 'Share/Export',
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            onPressed: _patientData != null ? () => _showExportOptions() : null,
+            icon: Icon(Icons.share, color: Colors.blue[700]),
+            tooltip: 'Share/Export',
+          ),
+          IconButton(
+            onPressed: _patientData != null
+                ? () => _navigateToExerciseRecommendation()
+                : null,
+            icon: Icon(Icons.fitness_center, color: Colors.blue[700]),
+            tooltip: 'Exercise Recommendations',
+          ),
+        ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+          ? const Center(child: CircularProgressIndicator(color: Colors.blue))
           : _patientData == null
               ? Center(
                   child: Text(
@@ -356,7 +420,11 @@ class _ComprehensivePatientDetailsState
                           _buildPersonalInfo(isSmallScreen)),
                       const SizedBox(height: 16),
                       _buildSection('🏥 Health & Lifestyle Information',
-                          _buildHealthLifestyleInfo(isSmallScreen)),
+                          _buildHealthLifestyleSection(isSmallScreen)),
+                      const SizedBox(height: 16),
+                      _buildSection(
+                          '👨‍👩‍👧‍👦 Family Health History & Physical Activity',
+                          _buildFamilyActivitySection(isSmallScreen)),
                       const SizedBox(height: 16),
                       _buildSection(
                           '🍎 Diet Assessment (Food Frequency Questionnaire)',
@@ -368,20 +436,22 @@ class _ComprehensivePatientDetailsState
                       _buildSection('📱 App Usability Assessment (SUS)',
                           _buildUsabilityAssessment(isSmallScreen)),
                       const SizedBox(height: 16),
-                      _buildSection('📋 Recent Medical Records',
-                          _buildMedicalRecords(isSmallScreen)),
                     ],
                   ),
                 ),
-      // floatingActionButton: _patientData != null
-      //     ? FloatingActionButton(
-      //         onPressed: _generatePDF,
-      //         backgroundColor: Colors.teal,
-      //         foregroundColor: Colors.white,
-      //         tooltip: 'Download PDF',
-      //         child: const Icon(Icons.picture_as_pdf),
-      //       )
-      //     : null,
+    );
+  }
+
+  void _navigateToExerciseRecommendation() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExerciseRecommendationPage(
+          patientId: widget.patientId,
+          patientName: widget.patientName,
+          patientData: _patientData,
+        ),
+      ),
     );
   }
 
@@ -398,40 +468,76 @@ class _ComprehensivePatientDetailsState
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.teal[900],
+                    color: Colors.blue[900],
                   ),
             ),
             const SizedBox(height: 12),
             ListTile(
-              leading: const Icon(Icons.picture_as_pdf, color: Colors.teal),
-              title: const Text('Download as PDF'),
-              subtitle: const Text('Save complete patient report'),
-              onTap: () {
-                Navigator.pop(context);
-                _generatePDF();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share, color: Colors.teal),
-              title: const Text('Share via WhatsApp'),
-              subtitle: const Text('Send report via WhatsApp'),
+              leading: const Icon(Icons.share, color: Colors.blue),
+              title: const Text('Share Report'),
+              subtitle: const Text('Share via any app (WhatsApp, Email, etc.)'),
               onTap: () async {
                 Navigator.pop(context);
                 final result = await _generatePDF(forSharing: true);
                 if (result != null) {
                   final filePath = result['filePath'] as String;
-                  await Share.shareXFiles(
-                    [XFile(filePath)],
-                    text: 'Patient Report for ${widget.patientName}',
-                  );
+                  final fileName = result['fileName'] as String;
+
+                  try {
+                    await Share.shareXFiles(
+                      [XFile(filePath)],
+                      text:
+                          'Patient Medical Report for ${widget.patientName}\n\nGenerated on: ${DateFormat('MMM dd, yyyy').format(DateTime.now())}\n\nThis report contains comprehensive patient information including personal details, health assessments, and medical history.',
+                      subject: 'Patient Report - ${widget.patientName}',
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error sharing report: $e'),
+                        backgroundColor: Colors.red[600],
+                      ),
+                    );
+                  }
                 } else {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Failed to share report'),
+                      content:
+                          const Text('Failed to generate report for sharing'),
                       backgroundColor: Colors.red[600],
                     ),
                   );
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.email, color: Colors.blue),
+              title: const Text('Email Report'),
+              subtitle: const Text('Send via email application'),
+              onTap: () async {
+                Navigator.pop(context);
+                final result = await _generatePDF(forSharing: true);
+                if (result != null) {
+                  final filePath = result['filePath'] as String;
+                  final fileName = result['fileName'] as String;
+
+                  try {
+                    await Share.shareXFiles(
+                      [XFile(filePath)],
+                      text:
+                          'Patient Medical Report for ${widget.patientName}\n\nGenerated on: ${DateFormat('MMM dd, yyyy').format(DateTime.now())}\n\nPlease find attached the comprehensive patient report.',
+                      subject: 'Patient Report - ${widget.patientName}',
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error sharing via email: $e'),
+                        backgroundColor: Colors.red[600],
+                      ),
+                    );
+                  }
                 }
               },
             ),
@@ -449,7 +555,7 @@ class _ComprehensivePatientDetailsState
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
-            colors: [Colors.teal[50]!, Colors.teal[100]!],
+            colors: [Colors.blue[50]!, Colors.blue[100]!],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -459,13 +565,13 @@ class _ComprehensivePatientDetailsState
           children: [
             CircleAvatar(
               radius: isSmallScreen ? 40 : 50,
-              backgroundColor: Colors.teal[100],
+              backgroundColor: Colors.blue[100],
               child: Text(
                 widget.patientName.substring(0, 1).toUpperCase(),
                 style: TextStyle(
                   fontSize: isSmallScreen ? 28 : 36,
                   fontWeight: FontWeight.bold,
-                  color: Colors.teal[800],
+                  color: Colors.blue[800],
                 ),
               ),
             ),
@@ -479,7 +585,7 @@ class _ComprehensivePatientDetailsState
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontSize: isSmallScreen ? 22 : 28,
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal[900],
+                          color: Colors.blue[900],
                         ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -506,7 +612,7 @@ class _ComprehensivePatientDetailsState
                             ? 'Complete'
                             : 'Incomplete',
                         _patientData!['profileCompleted'] == true
-                            ? Colors.teal
+                            ? Colors.blue[600]
                             : Colors.orange,
                       ),
                       _buildInfoChip(_safeToString(_patientData!['gender'])),
@@ -560,14 +666,14 @@ class _ComprehensivePatientDetailsState
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            Icon(icon, size: isSmallScreen ? 24 : 32, color: Colors.teal[600]),
+            Icon(icon, size: isSmallScreen ? 24 : 32, color: Colors.blue[600]),
             const SizedBox(height: 8),
             Text(
               value,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: isSmallScreen ? 12 : 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.teal[800],
+                    color: Colors.blue[800],
                   ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -604,12 +710,12 @@ class _ComprehensivePatientDetailsState
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.teal[900],
+                    color: Colors.blue[900],
                   ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const Divider(color: Colors.teal, thickness: 0.5),
+            const Divider(color: Colors.blue, thickness: 0.5),
             const SizedBox(height: 8),
             content,
           ],
@@ -619,14 +725,14 @@ class _ComprehensivePatientDetailsState
   }
 
   Widget _buildPersonalInfo(bool isSmallScreen) {
-    return ListView(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDetailRow(
-            'Full Name', _safeToString(_patientData!['name']), isSmallScreen),
-        _buildDetailRow('Date of Birth',
-            _safeToString(_patientData!['dateOfBirth']), isSmallScreen),
+            'Full Name',
+            _safeToString(_patientData!['fullName'] ?? _patientData!['name']),
+            isSmallScreen),
+
         _buildDetailRow(
             'Age', _safeToString(_patientData!['age']), isSmallScreen),
         _buildDetailRow(
@@ -635,20 +741,43 @@ class _ComprehensivePatientDetailsState
             _safeToString(_patientData!['maritalStatus']), isSmallScreen),
         _buildDetailRow('Living Situation',
             _safeToString(_patientData!['livingSituation']), isSmallScreen),
-        _buildDetailRow('Phone Number', _safeToString(_patientData!['phone']),
-            isSmallScreen),
+        _buildDetailRow(
+            'Phone', _safeToString(_patientData!['phone']), isSmallScreen),
         _buildDetailRow(
             'Email', _safeToString(_patientData!['email']), isSmallScreen),
         _buildDetailRow(
             'Address', _safeToString(_patientData!['address']), isSmallScreen),
-        _buildDetailRow('Blood Group',
-            _safeToString(_patientData!['bloodGroup']), isSmallScreen),
-        const SizedBox(height: 12),
+
+        // Emergency Contact Information
+        if (_patientData!['emergencyContact'] != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Emergency Contact:',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontSize: isSmallScreen ? 12 : 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[700],
+                ),
+          ),
+          const SizedBox(height: 4),
+          _buildDetailRow(
+              'Contact Name',
+              _safeToString(_patientData!['emergencyContact']['name']),
+              isSmallScreen),
+          _buildDetailRow(
+              'Relationship',
+              _safeToString(_patientData!['emergencyContact']['relationship']),
+              isSmallScreen),
+          _buildDetailRow(
+              'Contact Phone',
+              _safeToString(_patientData!['emergencyContact']['phone']),
+              isSmallScreen),
+        ],
       ],
     );
   }
 
-  Widget _buildHealthLifestyleInfo(bool isSmallScreen) {
+  Widget _buildHealthLifestyleSection(bool isSmallScreen) {
     final healthLifestyle =
         _patientData!['healthLifestyle'] as Map<String, dynamic>?;
     final medicalHistory =
@@ -663,7 +792,7 @@ class _ComprehensivePatientDetailsState
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontSize: isSmallScreen ? 14 : 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal[900],
+                color: Colors.blue[900],
               ),
         ),
         const SizedBox(height: 8),
@@ -677,7 +806,7 @@ class _ComprehensivePatientDetailsState
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontSize: isSmallScreen ? 14 : 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal[900],
+                color: Colors.blue[900],
               ),
         ),
         const SizedBox(height: 8),
@@ -697,7 +826,7 @@ class _ComprehensivePatientDetailsState
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontSize: isSmallScreen ? 14 : 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal[900],
+                color: Colors.blue[900],
               ),
         ),
         const SizedBox(height: 8),
@@ -734,10 +863,122 @@ class _ComprehensivePatientDetailsState
     );
   }
 
+  Widget _buildFamilyActivitySection(bool isSmallScreen) {
+    final familyHealthHistory =
+        _patientData!['familyHealthHistory'] as Map<String, dynamic>?;
+    final physicalActivity =
+        _patientData!['physicalActivity'] as Map<String, dynamic>?;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (familyHealthHistory != null) ...[
+          if (familyHealthHistory['members'] != null) ...[
+            _buildDetailRow(
+                'Mother - Age',
+                _safeToString(familyHealthHistory['members']['mother']?['age']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Mother - Health Status',
+                _safeToString(
+                    familyHealthHistory['members']['mother']?['inGoodHealth']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Mother - Alive',
+                _safeToString(
+                    familyHealthHistory['members']['mother']?['alive']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Mother - Health Problems',
+                _safeToString(familyHealthHistory['members']['mother']
+                    ?['knownHealthProblems']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Father - Age',
+                _safeToString(familyHealthHistory['members']['father']?['age']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Father - Health Status',
+                _safeToString(
+                    familyHealthHistory['members']['father']?['inGoodHealth']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Father - Alive',
+                _safeToString(
+                    familyHealthHistory['members']['father']?['alive']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Father - Health Problems',
+                _safeToString(familyHealthHistory['members']['father']
+                    ?['knownHealthProblems']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Brother - Age',
+                _safeToString(
+                    familyHealthHistory['members']['brother']?['age']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Brother - Health Status',
+                _safeToString(
+                    familyHealthHistory['members']['brother']?['inGoodHealth']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Brother - Alive',
+                _safeToString(
+                    familyHealthHistory['members']['brother']?['alive']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Brother - Health Problems',
+                _safeToString(familyHealthHistory['members']['brother']
+                    ?['knownHealthProblems']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Sister - Age',
+                _safeToString(familyHealthHistory['members']['sister']?['age']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Sister - Health Status',
+                _safeToString(
+                    familyHealthHistory['members']['sister']?['inGoodHealth']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Sister - Alive',
+                _safeToString(
+                    familyHealthHistory['members']['sister']?['alive']),
+                isSmallScreen),
+            _buildDetailRow(
+                'Sister - Health Problems',
+                _safeToString(familyHealthHistory['members']['sister']
+                    ?['knownHealthProblems']),
+                isSmallScreen),
+          ],
+          _buildDetailRow(
+              'Additional Family Health Info',
+              _safeToString(familyHealthHistory['additionalInfo']),
+              isSmallScreen),
+        ],
+        if (physicalActivity != null) ...[
+          _buildDetailRow(
+              'Strenuous Exercise (times/week)',
+              _safeToString(physicalActivity['strenuousExerciseTimesPerWeek']),
+              isSmallScreen),
+          _buildDetailRow(
+              'Moderate Exercise (times/week)',
+              _safeToString(physicalActivity['moderateExerciseTimesPerWeek']),
+              isSmallScreen),
+          _buildDetailRow(
+              'Mild Exercise (times/week)',
+              _safeToString(physicalActivity['mildExerciseTimesPerWeek']),
+              isSmallScreen),
+        ],
+      ],
+    );
+  }
+
   Widget _buildDietAssessment(bool isSmallScreen) {
     final dietaryHabits =
         _patientData!['dietaryHabits'] as Map<String, dynamic>?;
-    if (dietaryHabits == null) {
+    if (dietaryHabits == null || dietaryHabits.isEmpty) {
       return Text(
         'No dietary assessment data available',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -773,8 +1014,9 @@ class _ComprehensivePatientDetailsState
       itemBuilder: (context, index) {
         final key = questions.keys.elementAt(index);
         final question = questions[key]!;
-        return _buildDetailRow('$key. $question',
-            _safeToString(dietaryHabits[key]), isSmallScreen);
+        final answer = dietaryHabits[key];
+        return _buildDetailRow(
+            '$key. $question', _safeToString(answer), isSmallScreen);
       },
     );
   }
@@ -782,7 +1024,7 @@ class _ComprehensivePatientDetailsState
   Widget _buildStrengthAssessment(bool isSmallScreen) {
     final muscleStrength =
         _patientData!['muscleStrength'] as Map<String, dynamic>?;
-    if (muscleStrength == null) {
+    if (muscleStrength == null || muscleStrength.isEmpty) {
       return Text(
         'No muscle strength assessment data available',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -811,8 +1053,8 @@ class _ComprehensivePatientDetailsState
       itemBuilder: (context, index) {
         final key = questions.keys.elementAt(index);
         final question = questions[key]!;
-        return _buildDetailRow(
-            question, _safeToString(muscleStrength[key]), isSmallScreen);
+        final answer = muscleStrength[key];
+        return _buildDetailRow(question, _safeToString(answer), isSmallScreen);
       },
     );
   }
@@ -820,7 +1062,7 @@ class _ComprehensivePatientDetailsState
   Widget _buildUsabilityAssessment(bool isSmallScreen) {
     final appUsability =
         _patientData!['applicationUsability'] as Map<String, dynamic>?;
-    if (appUsability == null) {
+    if (appUsability == null || appUsability.isEmpty) {
       return Text(
         'No app usability assessment data available',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -849,8 +1091,8 @@ class _ComprehensivePatientDetailsState
       itemCount: questions.length,
       itemBuilder: (context, index) {
         final question = questions[index];
-        return _buildDetailRow(
-            question, _safeToString(appUsability[question]), isSmallScreen);
+        final answer = appUsability[question];
+        return _buildDetailRow(question, _safeToString(answer), isSmallScreen);
       },
     );
   }
@@ -864,7 +1106,7 @@ class _ComprehensivePatientDetailsState
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontSize: isSmallScreen ? 14 : 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal[900],
+                color: Colors.blue[900],
               ),
         ),
         const SizedBox(height: 8),
@@ -900,10 +1142,10 @@ class _ComprehensivePatientDetailsState
                   margin: const EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
-                  color: Colors.teal[50],
+                  color: Colors.blue[50],
                   child: ListTile(
                     leading:
-                        const Icon(Icons.medical_services, color: Colors.teal),
+                        const Icon(Icons.medical_services, color: Colors.blue),
                     title: Text(
                       'Date: $dateStr',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -934,7 +1176,7 @@ class _ComprehensivePatientDetailsState
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontSize: isSmallScreen ? 14 : 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal[900],
+                color: Colors.blue[900],
               ),
         ),
         const SizedBox(height: 8),
@@ -970,10 +1212,10 @@ class _ComprehensivePatientDetailsState
                   margin: const EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
-                  color: Colors.teal[50],
+                  color: Colors.blue[50],
                   child: ListTile(
                     leading:
-                        const Icon(Icons.restaurant_menu, color: Colors.teal),
+                        const Icon(Icons.restaurant_menu, color: Colors.blue),
                     title: Text(
                       'Start Date: $startDateStr',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1027,7 +1269,7 @@ class _ComprehensivePatientDetailsState
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: isSmallScreen ? 12 : 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.teal[800],
+                    color: Colors.blue[800],
                   ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -1042,16 +1284,16 @@ class _ComprehensivePatientDetailsState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.teal[50],
+        color: Colors.blue[50],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.teal[200]!),
+        border: Border.all(color: Colors.blue[200]!),
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: color ?? Colors.teal[800],
+              color: color ?? Colors.blue[800],
             ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,

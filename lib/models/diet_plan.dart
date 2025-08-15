@@ -9,6 +9,7 @@ class DietPlan {
   final List<String>? restrictions;
   final String? nutritionGuidelines;
   final String? additionalInstructions;
+  final List<MealLog>? logs;
 
   DietPlan({
     required this.id,
@@ -21,14 +22,14 @@ class DietPlan {
     this.restrictions,
     this.nutritionGuidelines,
     this.additionalInstructions,
+    this.logs,
   });
 
   factory DietPlan.fromJson(Map<String, dynamic> json) {
     List<Meal> mealsList = [];
     if (json['meals'] != null) {
-      mealsList = (json['meals'] as List)
-          .map((meal) => Meal.fromJson(meal))
-          .toList();
+      mealsList =
+          (json['meals'] as List).map((meal) => Meal.fromJson(meal)).toList();
     }
 
     List<String>? restrictionsList;
@@ -36,17 +37,29 @@ class DietPlan {
       restrictionsList = List<String>.from(json['restrictions']);
     }
 
+    List<MealLog>? logsList;
+    if (json['logs'] != null) {
+      logsList =
+          (json['logs'] as List).map((log) => MealLog.fromJson(log)).toList();
+    }
+
     return DietPlan(
-      id: json['id'],
-      doctorId: json['doctor_id'],
-      patientId: json['patient_id'],
-      patientName: json['patients']['name'],
-      startDate: json['start_date'],
-      endDate: json['end_date'],
+      id: json['id'] ?? '',
+      doctorId: json['doctor_id'] ?? json['doctorId'] ?? '',
+      patientId: json['patient_id'] ?? json['patientId'] ?? '',
+      patientName:
+          json['patientName'] ?? json['patients']?['name'] ?? 'Unknown Patient',
+      startDate: json['start_date'] ??
+          json['startDate'] ??
+          DateTime.now().toIso8601String(),
+      endDate: json['end_date'] ?? json['endDate'],
       meals: mealsList,
       restrictions: restrictionsList,
-      nutritionGuidelines: json['nutrition_guidelines'],
-      additionalInstructions: json['additional_instructions'],
+      nutritionGuidelines:
+          json['nutrition_guidelines'] ?? json['nutritionGuidelines'],
+      additionalInstructions:
+          json['additional_instructions'] ?? json['additionalInstructions'],
+      logs: logsList,
     );
   }
 
@@ -61,6 +74,7 @@ class DietPlan {
       'restrictions': restrictions,
       'nutrition_guidelines': nutritionGuidelines,
       'additional_instructions': additionalInstructions,
+      'logs': logs?.map((log) => log.toJson()).toList(),
     };
   }
 }
@@ -89,10 +103,10 @@ class Meal {
     }
 
     return Meal(
-      type: json['type'],
-      name: json['name'],
+      type: json['type'] ?? '',
+      name: json['name'] ?? '',
       description: json['description'],
-      portionSize: json['portion_size'],
+      portionSize: json['portion_size'] ?? json['portionSize'],
       ingredients: ingredientsList,
       time: json['time'],
     );
@@ -110,3 +124,38 @@ class Meal {
   }
 }
 
+class MealLog {
+  final String mealType; // breakfast, lunch, dinner, snack
+  final DateTime date;
+  final bool eatenAsPrescribed;
+  final String? alternativeFood;
+  final String? notes;
+
+  MealLog({
+    required this.mealType,
+    required this.date,
+    required this.eatenAsPrescribed,
+    this.alternativeFood,
+    this.notes,
+  });
+
+  factory MealLog.fromJson(Map<String, dynamic> json) {
+    return MealLog(
+      mealType: json['mealType'] ?? '',
+      date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
+      eatenAsPrescribed: json['eatenAsPrescribed'] ?? false,
+      alternativeFood: json['alternativeFood'],
+      notes: json['notes'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'mealType': mealType,
+      'date': date.toIso8601String(),
+      'eatenAsPrescribed': eatenAsPrescribed,
+      'alternativeFood': alternativeFood,
+      'notes': notes,
+    };
+  }
+}

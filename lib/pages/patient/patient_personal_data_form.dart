@@ -22,6 +22,7 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
 
   DateTime? _selectedDateOfBirth;
   String? _selectedGender;
+  String? _selectedBloodGroup;
   String? _selectedMaritalStatus;
   String? _selectedLivingSituation;
   bool _isLoading = false;
@@ -35,6 +36,17 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
     'Female',
     'Other',
     'Prefer not to say'
+  ];
+  final List<String> _bloodGroups = [
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-',
+    'Unknown'
   ];
   final List<String> _maritalStatuses = [
     'Single',
@@ -92,6 +104,7 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
 
     if (_selectedDateOfBirth == null ||
         _selectedGender == null ||
+        _selectedBloodGroup == null ||
         _selectedMaritalStatus == null ||
         _selectedLivingSituation == null) {
       setState(() {
@@ -117,9 +130,12 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
     try {
       final personalData = {
         'name': _nameController.text.trim(),
+        'fullName': _nameController.text
+            .trim(), // Also save as fullName for consistency
         'dateOfBirth': Timestamp.fromDate(_selectedDateOfBirth!),
         'age': _calculateAge(_selectedDateOfBirth!),
         'gender': _selectedGender,
+        'bloodGroup': _selectedBloodGroup,
         'maritalStatus': _selectedMaritalStatus,
         'livingSituation': _selectedLivingSituation,
         'phone': _phoneController.text.trim(),
@@ -165,175 +181,219 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Personal Information'),
-        backgroundColor: Colors.blue[50],
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Personal Data',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Full Name
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Patient\'s Full Name *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
+    return WillPopScope(
+      onWillPop: () async {
+        // Show confirmation dialog when user tries to go back
+        return await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Leave Form'),
+                content: const Text(
+                    'Are you sure you want to leave? Your progress will be lost.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Leave'),
+                  ),
+                ],
+              ),
+            ) ??
+            false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Personal Information'),
+          backgroundColor: Colors.blue[50],
+        ),
+        body: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Personal Data',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your full name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 24),
 
-                    // Address
-                    TextFormField(
-                      controller: _addressController,
-                      decoration: const InputDecoration(
-                        labelText: 'Address *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.home),
-                      ),
-                      maxLines: 2,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter address';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Phone Number
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.phone),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter phone number';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Email (Display only - from Firebase Auth)
-                    TextFormField(
-                      initialValue: _auth.currentUser?.email ?? '',
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.email),
-                      ),
-                      enabled: false,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Emergency Contact Section
-                    const Text(
-                      'Emergency Contact',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Emergency Contact Name
-                    TextFormField(
-                      controller: _emergencyContactNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Emergency Contact Name *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person_outline),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter emergency contact name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Emergency Contact Relationship
-                    TextFormField(
-                      controller: _emergencyContactRelationshipController,
-                      decoration: const InputDecoration(
-                        labelText: 'Relationship *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.family_restroom),
-                        hintText: 'e.g., Spouse, Parent, Sibling',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter relationship';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Emergency Contact Phone
-                    TextFormField(
-                      controller: _emergencyContactPhoneController,
-                      decoration: const InputDecoration(
-                        labelText: 'Emergency Contact Phone *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.emergency),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter emergency contact phone';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Demographic Information Section
-                    const Text(
-                      'Demographic Information',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Date of Birth
-                    InkWell(
-                      onTap: _selectDateOfBirth,
-                      child: InputDecorator(
+                      // Full Name
+                      TextFormField(
+                        controller: _nameController,
                         decoration: const InputDecoration(
-                          labelText: 'Date of Birth *',
+                          labelText: 'Patient\'s Full Name *',
                           border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.calendar_today),
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your full name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Address
+                      TextFormField(
+                        controller: _addressController,
+                        decoration: const InputDecoration(
+                          labelText: 'Address *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.home),
+                        ),
+                        maxLines: 2,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter address';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Phone Number
+                      TextFormField(
+                        controller: _phoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.phone),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter phone number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Email (Display only - from Firebase Auth)
+                      TextFormField(
+                        initialValue: _auth.currentUser?.email ?? '',
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.email),
+                        ),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Emergency Contact Section
+                      const Text(
+                        'Emergency Contact',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Emergency Contact Name
+                      TextFormField(
+                        controller: _emergencyContactNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Emergency Contact Name *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter emergency contact name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Emergency Contact Relationship
+                      TextFormField(
+                        controller: _emergencyContactRelationshipController,
+                        decoration: const InputDecoration(
+                          labelText: 'Relationship *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.family_restroom),
+                          hintText: 'e.g., Spouse, Parent, Sibling',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter relationship';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Emergency Contact Phone
+                      TextFormField(
+                        controller: _emergencyContactPhoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Emergency Contact Phone *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.emergency),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter emergency contact phone';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Demographic Information Section
+                      const Text(
+                        'Demographic Information',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Date of Birth
+                      InkWell(
+                        onTap: _selectDateOfBirth,
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Date of Birth *',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.calendar_today),
+                          ),
+                          child: Text(
+                            _selectedDateOfBirth == null
+                                ? 'Select Date of Birth'
+                                : '${_selectedDateOfBirth!.day}/${_selectedDateOfBirth!.month}/${_selectedDateOfBirth!.year}',
+                            style: TextStyle(
+                              color: _selectedDateOfBirth == null
+                                  ? Colors.grey[600]
+                                  : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Age (Auto-calculated)
+                      InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Age',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person_outline),
                         ),
                         child: Text(
                           _selectedDateOfBirth == null
-                              ? 'Select Date of Birth'
-                              : '${_selectedDateOfBirth!.day}/${_selectedDateOfBirth!.month}/${_selectedDateOfBirth!.year}',
+                              ? 'Select date of birth first'
+                              : '${_calculateAge(_selectedDateOfBirth!)} years',
                           style: TextStyle(
                             color: _selectedDateOfBirth == null
                                 ? Colors.grey[600]
@@ -341,178 +401,179 @@ class _PatientPersonalDataFormState extends State<PatientPersonalDataForm> {
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Age (Auto-calculated)
-                    InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Age',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.cake),
-                      ),
-                      child: Text(
-                        _selectedDateOfBirth == null
-                            ? 'Age will be calculated'
-                            : '${_calculateAge(_selectedDateOfBirth!)} years',
-                        style: TextStyle(
-                          color: _selectedDateOfBirth == null
-                              ? Colors.grey[600]
-                              : Colors.black,
+                      // Gender
+                      DropdownButtonFormField<String>(
+                        value: _selectedGender,
+                        decoration: const InputDecoration(
+                          labelText: 'Gender *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person_outline),
                         ),
+                        hint: const Text('Select Gender'),
+                        items: _genders.map((String gender) {
+                          return DropdownMenuItem<String>(
+                            value: gender,
+                            child: Text(gender),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedGender = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select gender';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Gender
-                    DropdownButtonFormField<String>(
-                      value: _selectedGender,
-                      decoration: const InputDecoration(
-                        labelText: 'Gender *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.wc),
-                      ),
-                      items: _genders.map((gender) {
-                        return DropdownMenuItem(
-                          value: gender,
-                          child: Text(gender),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedGender = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Please select gender';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Marital Status
-                    DropdownButtonFormField<String>(
-                      value: _selectedMaritalStatus,
-                      decoration: const InputDecoration(
-                        labelText: 'Marital Status *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.favorite),
-                      ),
-                      items: _maritalStatuses.map((status) {
-                        return DropdownMenuItem(
-                          value: status,
-                          child: Text(status),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedMaritalStatus = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Please select marital status';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Living Situation
-                    DropdownButtonFormField<String>(
-                      value: _selectedLivingSituation,
-                      decoration: const InputDecoration(
-                        labelText: 'Living Situation *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.house),
-                      ),
-                      items: _livingSituations.map((situation) {
-                        return DropdownMenuItem(
-                          value: situation,
-                          child: Text(situation),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedLivingSituation = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Please select living situation';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    if (_errorMessage != null)
-                      Container(
-                        margin: const EdgeInsets.only(top: 16),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red[200]!),
+                      // Blood Group
+                      DropdownButtonFormField<String>(
+                        value: _selectedBloodGroup,
+                        decoration: const InputDecoration(
+                          labelText: 'Blood Group *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.bloodtype),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error_outline, color: Colors.red[600]),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _errorMessage!,
-                                style: TextStyle(color: Colors.red[600]),
-                              ),
-                            ),
-                          ],
-                        ),
+                        hint: const Text('Select Blood Group'),
+                        items: _bloodGroups.map((String bloodGroup) {
+                          return DropdownMenuItem<String>(
+                            value: bloodGroup,
+                            child: Text(bloodGroup),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedBloodGroup = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select blood group';
+                          }
+                          return null;
+                        },
                       ),
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 1,
-                    blurRadius: 5,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _savePersonalData,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                      const SizedBox(height: 16),
+
+                      // Marital Status
+                      DropdownButtonFormField<String>(
+                        value: _selectedMaritalStatus,
+                        decoration: const InputDecoration(
+                          labelText: 'Marital Status *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.favorite),
+                        ),
+                        hint: const Text('Select Marital Status'),
+                        items: _maritalStatuses.map((String status) {
+                          return DropdownMenuItem<String>(
+                            value: status,
+                            child: Text(status),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedMaritalStatus = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select marital status';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Living Situation
+                      DropdownButtonFormField<String>(
+                        value: _selectedLivingSituation,
+                        decoration: const InputDecoration(
+                          labelText: 'Living Situation *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.home),
+                        ),
+                        hint: const Text('Select Living Situation'),
+                        items: _livingSituations.map((String situation) {
+                          return DropdownMenuItem<String>(
+                            value: situation,
+                            child: Text(situation),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedLivingSituation = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select living situation';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Error Message
+                      if (_errorMessage != null)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red[200]!),
                           ),
-                        )
-                      : const Text(
-                          'Continue',
-                          style: TextStyle(fontSize: 16),
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
+
+                      const SizedBox(height: 24),
+
+                      // Submit Button
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _savePersonalData,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Save & Continue',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

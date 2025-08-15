@@ -35,70 +35,94 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (snapshot.hasData) {
-          // User is logged in, check their role and profile status
-          return FutureBuilder<Widget>(
-            future: _determineUserDestination(snapshot.data!),
-            builder: (context, futureSnapshot) {
-              if (futureSnapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
-              }
-              
-              return futureSnapshot.data ?? const WelcomePage();
-            },
-          );
-        }
-
-        // User is not logged in
-        return const WelcomePage();
+    return WillPopScope(
+      onWillPop: () async {
+        // Show confirmation dialog when user tries to exit
+        return await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Exit App'),
+                content: const Text('Are you sure you want to exit the app?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Exit'),
+                  ),
+                ],
+              ),
+            ) ??
+            false;
       },
+      child: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (snapshot.hasData) {
+            // User is logged in, check their role and profile status
+            return FutureBuilder<Widget>(
+              future: _determineUserDestination(snapshot.data!),
+              builder: (context, futureSnapshot) {
+                if (futureSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                return futureSnapshot.data ?? const WelcomePage();
+              },
+            );
+          }
+
+          // User is not logged in
+          return const WelcomePage();
+        },
+      ),
     );
   }
 
   Future<Widget> _determineUserDestination(User user) async {
-  try {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    
-    // Check if user is a doctor
-    DocumentSnapshot doctorDoc = await firestore.collection('doctors').doc(user.uid).get();
-    if (doctorDoc.exists) {
-      return const DoctorDashboard();
-    }
-    
-    // Check if user is a patient
-    DocumentSnapshot patientDoc = await firestore.collection('patients').doc(user.uid).get();
-    if (patientDoc.exists) {
-      final data = patientDoc.data() as Map<String, dynamic>?;
-      final profileCompleted = data?['profileCompleted'] as bool? ?? false;
-      final profileVersion = data?['profileVersion'] as int? ?? 0;
-      
-      // Check if profile is completed with version 29
-      if (profileCompleted && profileVersion >= 29) {
-        return const PatientDashboard();
-      } else {
-        // Profile not completed or old version, go to original form flow
-        return const PatientPersonalDataForm();
+    try {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      // Check if user is a doctor
+      DocumentSnapshot doctorDoc =
+          await firestore.collection('doctors').doc(user.uid).get();
+      if (doctorDoc.exists) {
+        return const DoctorDashboard();
       }
+
+      // Check if user is a patient
+      DocumentSnapshot patientDoc =
+          await firestore.collection('patients').doc(user.uid).get();
+      if (patientDoc.exists) {
+        final data = patientDoc.data() as Map<String, dynamic>?;
+        final profileCompleted = data?['profileCompleted'] as bool? ?? false;
+        final profileVersion = data?['profileVersion'] as int? ?? 0;
+
+        // Check if profile is completed with version 29
+        if (profileCompleted && profileVersion >= 29) {
+          return const PatientDashboard();
+        } else {
+          // Profile not completed or old version, go to original form flow
+          return const PatientPersonalDataForm();
+        }
+      }
+
+      // User document not found, sign out and go to welcome
+      await FirebaseAuth.instance.signOut();
+      return const WelcomePage();
+    } catch (e) {
+      print('Error determining user destination: $e');
+      return const WelcomePage();
     }
-    
-    // User document not found, sign out and go to welcome
-    await FirebaseAuth.instance.signOut();
-    return const WelcomePage();
-    
-  } catch (e) {
-    print('Error determining user destination: $e');
-    return const WelcomePage();
   }
-}
 }

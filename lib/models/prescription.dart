@@ -26,11 +26,12 @@ class Prescription {
     }
 
     return Prescription(
-      id: json['id'],
-      doctorId: json['doctor_id'],
-      patientId: json['patient_id'],
-      patientName: json['patients']['name'],
-      date: json['date'],
+      id: json['id'] ?? '',
+      doctorId: json['doctor_id'] ?? json['doctorId'] ?? '',
+      patientId: json['patient_id'] ?? json['patientId'] ?? '',
+      patientName:
+          json['patientName'] ?? json['patients']?['name'] ?? 'Unknown Patient',
+      date: json['date'] ?? '',
       medications: meds,
       instructions: json['instructions'],
     );
@@ -48,12 +49,49 @@ class Prescription {
   }
 }
 
+class MedicationLog {
+  final String medicationName;
+  final DateTime date;
+  final String time; // e.g., '08:00'
+  final bool taken;
+  final String? notes;
+
+  MedicationLog({
+    required this.medicationName,
+    required this.date,
+    required this.time,
+    required this.taken,
+    this.notes,
+  });
+
+  factory MedicationLog.fromJson(Map<String, dynamic> json) {
+    return MedicationLog(
+      medicationName: json['medicationName'] ?? '',
+      date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
+      time: json['time'] ?? '',
+      taken: json['taken'] ?? false,
+      notes: json['notes'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'medicationName': medicationName,
+      'date': date.toIso8601String(),
+      'time': time,
+      'taken': taken,
+      'notes': notes,
+    };
+  }
+}
+
 class Medication {
   final String name;
   final String dosage;
   final String frequency;
   final String duration;
   final String? notes;
+  final List<String>? times; // e.g., ['08:00', '14:00']
 
   Medication({
     required this.name,
@@ -61,15 +99,21 @@ class Medication {
     required this.frequency,
     required this.duration,
     this.notes,
+    this.times,
   });
 
   factory Medication.fromJson(Map<String, dynamic> json) {
+    List<String>? timesList;
+    if (json['times'] != null) {
+      timesList = List<String>.from(json['times']);
+    }
     return Medication(
-      name: json['name'],
-      dosage: json['dosage'],
-      frequency: json['frequency'],
-      duration: json['duration'],
+      name: json['name'] ?? '',
+      dosage: json['dosage'] ?? '',
+      frequency: json['frequency'] ?? '',
+      duration: json['duration'] ?? '',
       notes: json['notes'],
+      times: timesList,
     );
   }
 
@@ -80,7 +124,7 @@ class Medication {
       'frequency': frequency,
       'duration': duration,
       'notes': notes,
+      'times': times,
     };
   }
 }
-

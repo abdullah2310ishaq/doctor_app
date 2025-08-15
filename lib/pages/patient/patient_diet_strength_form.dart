@@ -219,9 +219,8 @@ class _PatientDietStrengthFormState extends State<PatientDietStrengthForm> {
       );
 
       // Navigate to the PatientDashboard after completing the entire profile
-      Navigator.of(context).pushAndRemoveUntil(
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const PatientDashboard()),
-        (route) => false,
       );
 
     } on FirebaseException catch (e) {
@@ -241,229 +240,242 @@ class _PatientDietStrengthFormState extends State<PatientDietStrengthForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Diet, Strength & Usability'),
-        backgroundColor: Colors.blue[50],
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Dietary Habits (Food Frequency Questionnaire)',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Food Frequency Questions
-                    ..._foodFrequencyAnswers.keys.map((questionKey) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${questionKey}. ${_foodFrequencyQuestions[questionKey]}',
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 8),
-                            ..._foodFrequencyOptions[questionKey]!.map((option) {
-                              return RadioListTile<String>(
-                                title: Text(option),
-                                value: option,
-                                groupValue: _foodFrequencyAnswers[questionKey],
-                                onChanged: (value) {
-                                  setState(() {
-                                    _foodFrequencyAnswers[questionKey] = value;
-                                  });
-                                },
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Muscle Strength (SARC-F Questionnaire)',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // SARC-F Questions
-                    ..._sarcfAnswers.keys.map((questionKey) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'How much difficulty do you have in: $questionKey',
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 8),
-                            ..._sarcfOptions[questionKey]!.map((option) {
-                              return RadioListTile<String>(
-                                title: Text(option),
-                                value: option,
-                                groupValue: _sarcfAnswers[questionKey],
-                                onChanged: (value) {
-                                  setState(() {
-                                    _sarcfAnswers[questionKey] = value;
-                                  });
-                                },
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Application Usability (System Usability Scale - SUS)',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Rate your agreement with the following statements (1: Strongly Disagree, 5: Strongly Agree)',
-                      style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // SUS Questions
-                    ..._susAnswers.keys.map((question) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              question,
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(5, (index) {
-                                final score = index + 1;
-                                return Expanded(
-                                  child: Column(
-                                    children: [
-                                      Radio<int>(
-                                        value: score,
-                                        groupValue: _susAnswers[question],
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _susAnswers[question] = value;
-                                          });
-                                        },
-                                      ),
-                                      Text('$score'),
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    
-                    if (_errorMessage != null)
-                      Container(
-                        margin: const EdgeInsets.only(top: 16.0),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red[200]!),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error_outline, color: Colors.red[600]),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _errorMessage!,
-                                style: TextStyle(color: Colors.red[600]),
-                              ),
-                            ),
-                          ],
-                        ),
+    return WillPopScope(
+      onWillPop: () async {
+        // Show confirmation dialog when user tries to go back
+        return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Leave Form'),
+            content: const Text('Are you sure you want to leave? Your progress will be lost.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Leave'),
+              ),
+            ],
+          ),
+        ) ?? false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Diet, Strength & Usability'),
+          backgroundColor: Colors.blue[50],
+        ),
+        body: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Dietary Habits (Food Frequency Questionnaire)',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                    const SizedBox(height: 100), // Extra space for button
-                  ],
-                ),
-              ),
-            ),
-            
-            // Fixed bottom button
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 1,
-                    blurRadius: 5,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveDietStrengthUsabilityData,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(16.0),
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                      const SizedBox(height: 16),
+                      
+                      // Food Frequency Questions
+                      ..._foodFrequencyAnswers.keys.map((questionKey) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16.0),
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        )
-                      : const Text(
-                          'Complete Profile & Go to Dashboard',
-                          style: TextStyle(fontSize: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${questionKey}. ${_foodFrequencyQuestions[questionKey]}',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 8),
+                              ..._foodFrequencyOptions[questionKey]!.map((option) {
+                                return RadioListTile<String>(
+                                  title: Text(option),
+                                  value: option,
+                                  groupValue: _foodFrequencyAnswers[questionKey],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _foodFrequencyAnswers[questionKey] = value;
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Muscle Strength (SARC-F Questionnaire)',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // SARC-F Questions
+                      ..._sarcfAnswers.keys.map((questionKey) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16.0),
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'How much difficulty do you have in: $questionKey',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 8),
+                              ..._sarcfOptions[questionKey]!.map((option) {
+                                return RadioListTile<String>(
+                                  title: Text(option),
+                                  value: option,
+                                  groupValue: _sarcfAnswers[questionKey],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _sarcfAnswers[questionKey] = value;
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Application Usability (System Usability Scale - SUS)',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Rate your agreement with the following statements (1: Strongly Disagree, 5: Strongly Agree)',
+                        style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                      ),
+                      const SizedBox(height: 8),
+                      
+                      // SUS Questions
+                      ..._susAnswers.keys.map((question) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16.0),
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                question,
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: List.generate(5, (index) {
+                                  final score = index + 1;
+                                  return Expanded(
+                                    child: Column(
+                                      children: [
+                                        Radio<int>(
+                                          value: score,
+                                          groupValue: _susAnswers[question],
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _susAnswers[question] = value;
+                                            });
+                                          },
+                                        ),
+                                        Text('$score'),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      
+                      if (_errorMessage != null)
+                        Container(
+                          margin: const EdgeInsets.only(top: 16.0),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.error_outline, color: Colors.red[600]),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _errorMessage!,
+                                  style: TextStyle(color: Colors.red[600]),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Submit Button
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _saveDietStrengthUsabilityData,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Complete Profile',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

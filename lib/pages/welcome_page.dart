@@ -8,149 +8,171 @@ class WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue.shade50, Colors.white],
+    return WillPopScope(
+      onWillPop: () async {
+        // Show confirmation dialog when user tries to exit
+        return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Are you sure you want to exit the app?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Exit'),
+              ),
+            ],
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(flex: 2),
-                Hero(
-                  tag: 'app_logo',
-                  child: Icon(
-                    Icons.medical_services_rounded,
-                    size: 120,
-                    color: Colors.blue.shade700,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.blue.shade200,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'MediConnect',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade800,
-                    letterSpacing: 1.2,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 8.0,
-                        color: Colors.blue.shade100,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Connecting Doctors and Patients Seamlessly',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey.shade600,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const Spacer(flex: 1),
-                Text(
-                  'I am a:',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blue.shade900,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _UserTypeCard(
-                        title: 'Doctor',
-                        icon: Icons.medical_information,
-                        gradientColors: [
-                          Colors.blue.shade400,
-                          Colors.blue.shade700
-                        ],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DoctorRegistration(),
-                            ),
-                          );
-                        },
-                      ),
+        ) ?? false;
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.blue.shade50, Colors.white],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 2),
+                  Hero(
+                    tag: 'app_logo',
+                    child: Icon(
+                      Icons.medical_services_rounded,
+                      size: 120,
+                      color: Colors.blue.shade700,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 10.0,
+                          color: Colors.blue.shade200,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _UserTypeCard(
-                        title: 'Patient',
-                        icon: Icons.person,
-                        gradientColors: [
-                          Colors.teal.shade300,
-                          Colors.teal.shade600
-                        ],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PatientRegistration(),
-                            ),
-                          );
-                        },
-                      ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'MediConnect',
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade800,
+                      letterSpacing: 1.2,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 8.0,
+                          color: Colors.blue.shade100,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Already have an account? ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade700,
-                      ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Connecting Doctors and Patients Seamlessly',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginPage(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        'Log In',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade700,
+                    textAlign: TextAlign.center,
+                  ),
+                  const Spacer(flex: 1),
+                  Text(
+                    'I am a:',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _UserTypeCard(
+                          title: 'Doctor',
+                          icon: Icons.medical_information,
+                          gradientColors: [
+                            Colors.blue.shade400,
+                            Colors.blue.shade700
+                          ],
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DoctorRegistration(),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const Spacer(flex: 2),
-              ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _UserTypeCard(
+                          title: 'Patient',
+                          icon: Icons.person,
+                          gradientColors: [
+                            Colors.teal.shade300,
+                            Colors.teal.shade600
+                          ],
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PatientRegistration(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Already have an account? ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Log In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(flex: 2),
+                ],
+              ),
             ),
           ),
         ),

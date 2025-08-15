@@ -28,8 +28,36 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
   final _instructionsController = TextEditingController();
   bool _isLoading = false;
 
+  List<TimeOfDay> _medicationTimes = [const TimeOfDay(hour: 8, minute: 0)];
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> _pickTime(BuildContext context, int index) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _medicationTimes[index],
+    );
+    if (picked != null) {
+      setState(() {
+        _medicationTimes[index] = picked;
+      });
+    }
+  }
+
+  void _addTime() {
+    setState(() {
+      _medicationTimes.add(const TimeOfDay(hour: 8, minute: 0));
+    });
+  }
+
+  void _removeTime(int index) {
+    setState(() {
+      if (_medicationTimes.length > 1) {
+        _medicationTimes.removeAt(index);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -54,7 +82,8 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
         throw Exception('User not authenticated');
       }
 
-      final doctorDoc = await _firestore.collection('doctors').doc(user.uid).get();
+      final doctorDoc =
+          await _firestore.collection('doctors').doc(user.uid).get();
       final doctorName = doctorDoc.exists
           ? (doctorDoc.data() as Map<String, dynamic>)['fullName'] ?? 'Doctor'
           : 'Doctor';
@@ -71,6 +100,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
             'frequency': _frequencyController.text.trim(),
             'duration': _durationController.text.trim(),
             'notes': '',
+            'times': _medicationTimes.map((t) => t.format(context)).toList(),
           }
         ],
         'instructions': _instructionsController.text.trim(),
@@ -105,20 +135,26 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Prescribe for ${widget.patientName}'),
-        backgroundColor: Colors.teal[50],
+        title: Text(
+          'Prescribe for ${widget.patientName}',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.blue[700],
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.teal[100]!, Colors.teal[50]!],
+              colors: [Colors.blue[800]!, Colors.blue[600]!],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.teal),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -126,7 +162,8 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
         padding: const EdgeInsets.all(16.0),
         child: Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
@@ -138,7 +175,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                     'Prescription Details',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal[900],
+                          color: Colors.blue[900],
                         ),
                   ),
                   const SizedBox(height: 24),
@@ -149,7 +186,8 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: const Icon(Icons.medical_services, color: Colors.teal),
+                      prefixIcon: const Icon(Icons.medical_services,
+                          color: Colors.blue),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -166,7 +204,8 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: const Icon(Icons.local_pharmacy, color: Colors.teal),
+                      prefixIcon:
+                          const Icon(Icons.local_pharmacy, color: Colors.blue),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -177,7 +216,8 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: const Icon(Icons.schedule, color: Colors.teal),
+                      prefixIcon:
+                          const Icon(Icons.schedule, color: Colors.blue),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -188,7 +228,42 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: const Icon(Icons.calendar_today, color: Colors.teal),
+                      prefixIcon:
+                          const Icon(Icons.calendar_today, color: Colors.blue),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Times to take this medicine:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue[800],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Column(
+                    children: List.generate(_medicationTimes.length, (index) {
+                      return Row(
+                        children: [
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.access_time, color: Colors.blue),
+                            label: Text(_medicationTimes[index].format(context)),
+                            onPressed: () => _pickTime(context, index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle, color: Colors.red),
+                            onPressed: () => _removeTime(index),
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.add, color: Colors.blue),
+                      label: const Text('Add Time'),
+                      onPressed: _addTime,
                     ),
                   ),
                   const SizedBox(height: 16),

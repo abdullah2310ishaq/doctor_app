@@ -28,8 +28,22 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
   final _guidelinesController = TextEditingController();
   bool _isLoading = false;
 
+  TimeOfDay _breakfastTime = const TimeOfDay(hour: 8, minute: 0);
+  TimeOfDay _lunchTime = const TimeOfDay(hour: 13, minute: 0);
+  TimeOfDay _dinnerTime = const TimeOfDay(hour: 19, minute: 0);
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> _pickTime(BuildContext context, TimeOfDay initialTime, Function(TimeOfDay) onTimePicked) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
+    if (picked != null) {
+      onTimePicked(picked);
+    }
+  }
 
   @override
   void dispose() {
@@ -54,7 +68,8 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
         throw Exception('User not authenticated');
       }
 
-      final doctorDoc = await _firestore.collection('doctors').doc(user.uid).get();
+      final doctorDoc =
+          await _firestore.collection('doctors').doc(user.uid).get();
       final doctorName = doctorDoc.exists
           ? (doctorDoc.data() as Map<String, dynamic>)['fullName'] ?? 'Doctor'
           : 'Doctor';
@@ -64,7 +79,8 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
         'patientId': widget.patientId,
         'patientName': widget.patientName,
         'startDate': DateTime.now().toIso8601String(),
-        'endDate': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+        'endDate':
+            DateTime.now().add(const Duration(days: 30)).toIso8601String(),
         'meals': [
           {
             'type': 'Breakfast',
@@ -72,7 +88,7 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
             'description': _breakfastController.text.trim(),
             'portionSize': '1 serving',
             'ingredients': [],
-            'time': '8:00 AM',
+            'time': _breakfastTime.format(context),
           },
           {
             'type': 'Lunch',
@@ -80,7 +96,7 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
             'description': _lunchController.text.trim(),
             'portionSize': '1 serving',
             'ingredients': [],
-            'time': '1:00 PM',
+            'time': _lunchTime.format(context),
           },
           {
             'type': 'Dinner',
@@ -88,7 +104,7 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
             'description': _dinnerController.text.trim(),
             'portionSize': '1 serving',
             'ingredients': [],
-            'time': '7:00 PM',
+            'time': _dinnerTime.format(context),
           },
         ],
         'restrictions': _restrictionsController.text.trim().split(','),
@@ -125,20 +141,26 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Diet Plan for ${widget.patientName}'),
-        backgroundColor: Colors.teal[50],
+        title: Text(
+          'Diet Plan for ${widget.patientName}',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.blue[700],
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.teal[100]!, Colors.teal[50]!],
+              colors: [Colors.blue[800]!, Colors.blue[600]!],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.teal),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -146,7 +168,8 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
         padding: const EdgeInsets.all(16.0),
         child: Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
@@ -158,47 +181,98 @@ class _CreateDietPlanPageState extends State<CreateDietPlanPage> {
                     'Diet Plan Details',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal[900],
+                          color: Colors.blue[900],
                         ),
                   ),
                   const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _breakfastController,
-                    decoration: InputDecoration(
-                      labelText: 'Breakfast',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _breakfastController,
+                          decoration: InputDecoration(
+                            labelText: 'Breakfast',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.breakfast_dining,
+                                color: Colors.blue),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter breakfast details';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
-                      prefixIcon: const Icon(Icons.breakfast_dining, color: Colors.teal),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter breakfast details';
-                      }
-                      return null;
-                    },
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.access_time, color: Colors.blue),
+                        label: Text(_breakfastTime.format(context)),
+                        onPressed: () => _pickTime(context, _breakfastTime, (picked) {
+                          setState(() {
+                            _breakfastTime = picked;
+                          });
+                        }),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _lunchController,
-                    decoration: InputDecoration(
-                      labelText: 'Lunch',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _lunchController,
+                          decoration: InputDecoration(
+                            labelText: 'Lunch',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon:
+                                const Icon(Icons.lunch_dining, color: Colors.blue),
+                          ),
+                        ),
                       ),
-                      prefixIcon: const Icon(Icons.lunch_dining, color: Colors.teal),
-                    ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.access_time, color: Colors.blue),
+                        label: Text(_lunchTime.format(context)),
+                        onPressed: () => _pickTime(context, _lunchTime, (picked) {
+                          setState(() {
+                            _lunchTime = picked;
+                          });
+                        }),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _dinnerController,
-                    decoration: InputDecoration(
-                      labelText: 'Dinner',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _dinnerController,
+                          decoration: InputDecoration(
+                            labelText: 'Dinner',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon:
+                                const Icon(Icons.dinner_dining, color: Colors.blue),
+                          ),
+                        ),
                       ),
-                      prefixIcon: const Icon(Icons.dinner_dining, color: Colors.teal),
-                    ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.access_time, color: Colors.blue),
+                        label: Text(_dinnerTime.format(context)),
+                        onPressed: () => _pickTime(context, _dinnerTime, (picked) {
+                          setState(() {
+                            _dinnerTime = picked;
+                          });
+                        }),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

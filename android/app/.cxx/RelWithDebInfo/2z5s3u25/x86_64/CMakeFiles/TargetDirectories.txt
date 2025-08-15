@@ -1,0 +1,2 @@
+D:/siraesyem/doctot_app/doctor_app/android/app/.cxx/RelWithDebInfo/2z5s3u25/x86_64/CMakeFiles/edit_cache.dir
+D:/siraesyem/doctot_app/doctor_app/android/app/.cxx/RelWithDebInfo/2z5s3u25/x86_64/CMakeFiles/rebuild_cache.dir
