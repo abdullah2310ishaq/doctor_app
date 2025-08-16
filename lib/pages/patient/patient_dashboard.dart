@@ -1,3 +1,4 @@
+import 'package:doctor_app/pages/patient/patient_vital_signs_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:doctor_app/models/prescription.dart';
@@ -16,11 +17,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:doctor_app/pages/patient/weekly_feedback_page.dart';
 import 'package:doctor_app/pages/patient/patient_profile_edit_page.dart';
-import 'package:doctor_app/pages/patient/patient_vital_signs_page.dart';
-import 'package:doctor_app/pages/patient/patient_vital_signs_widget.dart';
+
 import 'package:doctor_app/services/reminder_service.dart';
-import 'package:doctor_app/widgets/bp_sugar_input_widget.dart';
-import 'package:doctor_app/widgets/weekly_vitals_chart_widget.dart';
 
 class PatientDashboard extends StatefulWidget {
   const PatientDashboard({super.key});
@@ -604,10 +602,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: 'Appointments',
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.monitor_heart),
               label: 'Vitals',
             ),
@@ -626,10 +620,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
       case 0:
         return _buildHomeTab();
       case 1:
-        return _buildAppointmentsTab();
-      case 2:
         return const PatientVitalSignsPage();
-      case 3:
+      case 2:
         return SettingsPage();
       default:
         return _buildHomeTab();
@@ -866,6 +858,74 @@ class _PatientDashboardState extends State<PatientDashboard> {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
+        // Greeting Card
+        Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.transparent, Colors.transparent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.teal[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.waving_hand,
+                        color: Colors.teal[700],
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hello, $_patientName! 👋',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.teal[900],
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Have a good day! 🌟',
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: Colors.teal[700],
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
         // Quick Actions Card
         Card(
           elevation: 4,
@@ -1041,17 +1101,16 @@ class _PatientDashboardState extends State<PatientDashboard> {
         const SizedBox(height: 16),
 
         // Vital Signs Widget
-        const PatientVitalSignsWidget(),
+        // const PatientVitalSignsWidget(),
 
         const SizedBox(height: 16),
 
         // BP and Sugar Input Widget
-        const BPSugarInputWidget(),
+        // const BPSugarInputWidget(),
 
         const SizedBox(height: 16),
 
         // Weekly Vitals Chart Widget
-        const WeeklyVitalsChartWidget(),
 
         const SizedBox(height: 16),
         Card(
@@ -1338,7 +1397,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     Icon(Icons.feedback, color: Colors.blue[600], size: 24),
                     const SizedBox(width: 8),
                     Text(
-                      'BIMONTHLY Health Assessment',
+                      'BIMONTHLY ASSESMENT',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -1356,10 +1415,18 @@ class _PatientDashboardState extends State<PatientDashboard> {
                       style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
                     const SizedBox(height: 4),
-                    Text('• Physical Activity (Godin)', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
-                    Text('• Dietary Habits', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
-                    Text('• Muscle Strength (SARC-F)', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
-                    Text('• App Usability (SUS)', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+                    Text('• Physical Activity (Godin)',
+                        style:
+                            TextStyle(fontSize: 14, color: Colors.grey[700])),
+                    Text('• Dietary Habits',
+                        style:
+                            TextStyle(fontSize: 14, color: Colors.grey[700])),
+                    Text('• Muscle Strength (SARC-F)',
+                        style:
+                            TextStyle(fontSize: 14, color: Colors.grey[700])),
+                    Text('• App Usability (SUS)',
+                        style:
+                            TextStyle(fontSize: 14, color: Colors.grey[700])),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -1387,109 +1454,59 @@ class _PatientDashboardState extends State<PatientDashboard> {
         const SizedBox(height: 16),
 
         // Profile Management Section
-        Card(
-          elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.person, color: Colors.green[600], size: 24),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Profile Management',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green[700],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Update your personal information, medical history, and baseline data including height, weight, allergies, and lifestyle habits.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PatientProfileEditPage(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Edit Profile'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[600],
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
 
         const SizedBox(height: 16),
 
         // Vital Signs Tracking Section
-        Card(
-          elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.monitor_heart,
-                        color: Colors.red[600], size: 24),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Vital Signs Tracking',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red[700],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Track your blood pressure and blood sugar levels with detailed charts and trends. Regular monitoring helps manage your health effectively.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PatientVitalSignsPage(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.trending_up),
-                  label: const Text('Track Vitals'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[600],
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        // Card(
+        //   elevation: 4,
+        //   shape:
+        //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(16),
+        //     child: Column(
+        //       crossAxisAlignment: CrossAxisAlignment.start,
+        //       children: [
+        //         Row(
+        //           children: [
+        //             Icon(Icons.monitor_heart, color: Colors.red[600], size: 24),
+        //             const SizedBox(width: 8),
+        //             Text(
+        //               'Vital Signs Tracking',
+        //               style: TextStyle(
+        //                 fontSize: 18,
+        //                 fontWeight: FontWeight.bold,
+        //                 color: Colors.red[700],
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //         const SizedBox(height: 12),
+        //         Text(
+        //           'Track your blood pressure and blood sugar levels with detailed charts and trends. Regular monitoring helps manage your health effectively.',
+        //           style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+        //         ),
+        //         const SizedBox(height: 12),
+        //         ElevatedButton.icon(
+        //           onPressed: () {
+        //             Navigator.push(
+        //               context,
+        //               MaterialPageRoute(
+        //                 builder: (context) => const PatientVitalSignsPage(),
+        //               ),
+        //             );
+        //           },
+        //           icon: const Icon(Icons.trending_up),
+        //           label: const Text('Track Vitals'),
+        //           style: ElevatedButton.styleFrom(
+        //             backgroundColor: Colors.red[600],
+        //             foregroundColor: Colors.white,
+        //           ),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

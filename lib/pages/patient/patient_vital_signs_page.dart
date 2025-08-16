@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:doctor_app/widgets/weekly_vitals_chart_widget.dart';
 
 class PatientVitalSignsPage extends StatefulWidget {
   const PatientVitalSignsPage({super.key});
@@ -24,11 +25,6 @@ class _PatientVitalSignsPageState extends State<PatientVitalSignsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vital Signs Tracking'),
-        backgroundColor: Colors.teal[700],
-        foregroundColor: Colors.white,
-      ),
       body: _patientId == null
           ? const Center(child: Text('User not authenticated'))
           : SingleChildScrollView(
@@ -128,34 +124,85 @@ class _PatientVitalSignsPageState extends State<PatientVitalSignsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.favorite, color: Colors.blue[700], size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Blood Pressure Tracking',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[800],
-                    ),
-                  ),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    onPressed: () => _showAddVitalDialog('blood_pressure'),
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Add Reading',
-                        style: TextStyle(fontSize: 12)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[600],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                    ),
-                  ),
-                ],
+              // Responsive header row
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 400) {
+                    // Small screen: Stack vertically
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.favorite,
+                                color: Colors.blue[700], size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Blood Pressure Tracking',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[800],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () =>
+                                _showAddVitalDialog('blood_pressure'),
+                            icon: const Icon(Icons.add, size: 16),
+                            label: const Text('Add Reading'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[600],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    // Larger screen: Row layout
+                    return Row(
+                      children: [
+                        Icon(Icons.favorite, color: Colors.blue[700], size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Blood Pressure Tracking',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue[800],
+                            ),
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              _showAddVitalDialog('blood_pressure'),
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('Add Reading'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 16),
               _buildBPChart(),
@@ -163,6 +210,9 @@ class _PatientVitalSignsPageState extends State<PatientVitalSignsPage> {
           ),
         ),
 
+        const SizedBox(height: 16),
+
+        const WeeklyVitalsChartWidget(),
         const SizedBox(height: 16),
 
         // Blood Sugar Section
@@ -177,34 +227,84 @@ class _PatientVitalSignsPageState extends State<PatientVitalSignsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.water_drop, color: Colors.orange[700], size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Blood Sugar Level Tracking',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
-                    ),
-                  ),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    onPressed: () => _showAddVitalDialog('blood_sugar'),
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Add Reading',
-                        style: TextStyle(fontSize: 12)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange[600],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                    ),
-                  ),
-                ],
+              // Responsive header row
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 400) {
+                    // Small screen: Stack vertically
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.water_drop,
+                                color: Colors.orange[700], size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Blood Sugar Level Tracking',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange[800],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showAddVitalDialog('blood_sugar'),
+                            icon: const Icon(Icons.add, size: 16),
+                            label: const Text('Add Reading'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange[600],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    // Larger screen: Row layout
+                    return Row(
+                      children: [
+                        Icon(Icons.water_drop,
+                            color: Colors.orange[700], size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Blood Sugar Level Tracking',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[800],
+                            ),
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _showAddVitalDialog('blood_sugar'),
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('Add Reading'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 16),
               _buildSugarChart(),
@@ -214,21 +314,42 @@ class _PatientVitalSignsPageState extends State<PatientVitalSignsPage> {
 
         const SizedBox(height: 16),
 
-        // Summary Stats
-        Row(
-          children: [
-            Expanded(
-                child: _buildVitalSummaryCard(
-                    'BP', '120/80', 'Normal', Colors.green)),
-            const SizedBox(width: 12),
-            Expanded(
-                child: _buildVitalSummaryCard(
-                    'Sugar', '95 mg/dL', 'Normal', Colors.green)),
-            const SizedBox(width: 12),
-            Expanded(
-                child: _buildVitalSummaryCard(
-                    'Readings', '14', 'This Week', Colors.blue)),
-          ],
+        // Summary Stats - Responsive
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 600) {
+              // Small screen: Stack vertically
+              return Column(
+                children: [
+                  _buildVitalSummaryCard(
+                      'BP', '120/80', 'Normal', Colors.green),
+                  const SizedBox(height: 12),
+                  _buildVitalSummaryCard(
+                      'Sugar', '95 mg/dL', 'Normal', Colors.green),
+                  const SizedBox(height: 12),
+                  _buildVitalSummaryCard(
+                      'Readings', '14', 'This Week', Colors.blue),
+                ],
+              );
+            } else {
+              // Larger screen: Row layout
+              return Row(
+                children: [
+                  Expanded(
+                      child: _buildVitalSummaryCard(
+                          'BP', '120/80', 'Normal', Colors.green)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: _buildVitalSummaryCard(
+                          'Sugar', '95 mg/dL', 'Normal', Colors.green)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: _buildVitalSummaryCard(
+                          'Readings', '14', 'This Week', Colors.blue)),
+                ],
+              );
+            }
+          },
         ),
       ],
     );
@@ -541,38 +662,85 @@ class _PatientVitalSignsPageState extends State<PatientVitalSignsPage> {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showAddVitalDialog('blood_pressure'),
-                    icon: const Icon(Icons.favorite),
-                    label: const Text('Add BP'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[600],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showAddVitalDialog('blood_sugar'),
-                    icon: const Icon(Icons.water_drop),
-                    label: const Text('Add Sugar'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange[600],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-              ],
+            // Responsive quick actions
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 400) {
+                  // Small screen: Stack vertically
+                  return Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              _showAddVitalDialog('blood_pressure'),
+                          icon: const Icon(Icons.favorite),
+                          label: const Text('Add Blood Pressure'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showAddVitalDialog('blood_sugar'),
+                          icon: const Icon(Icons.water_drop),
+                          label: const Text('Add Blood Sugar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  // Larger screen: Row layout
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              _showAddVitalDialog('blood_pressure'),
+                          icon: const Icon(Icons.favorite),
+                          label: const Text('Add BP'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showAddVitalDialog('blood_sugar'),
+                          icon: const Icon(Icons.water_drop),
+                          label: const Text('Add Sugar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              },
             ),
           ],
         ),

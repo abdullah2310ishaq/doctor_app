@@ -184,12 +184,6 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.blue[700],
-        foregroundColor: Colors.white,
-        elevation: 1,
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.blue))
           : Padding(
