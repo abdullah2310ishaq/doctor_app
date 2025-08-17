@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field
+
 import 'package:doctor_app/pages/patient/patient_vital_signs_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,7 +9,6 @@ import 'package:doctor_app/models/exercise.dart';
 import 'patient_exercise_page.dart';
 import 'patient_diet_plan_page.dart';
 import 'patient_prescription_page.dart';
-import 'appointment_booking_page.dart';
 import 'package:doctor_app/models/notification.dart';
 import 'package:doctor_app/services/notification_service.dart';
 import 'package:doctor_app/services/auth_service.dart';
@@ -16,7 +17,6 @@ import 'package:doctor_app/pages/doctor/notifications_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:doctor_app/pages/patient/weekly_feedback_page.dart';
-import 'package:doctor_app/pages/patient/patient_profile_edit_page.dart';
 
 import 'package:doctor_app/services/reminder_service.dart';
 
@@ -148,71 +148,9 @@ class _PatientDashboardState extends State<PatientDashboard> {
     });
   }
 
-  Future<void> _logMeal(String mealType, bool eatenAsPrescribed,
-      [String? altFood]) async {
-    final user = _auth.currentUser;
-    if (user == null || _todayDietPlan == null) return;
-    final log = {
-      'mealType': mealType,
-      'date': DateTime.now().toIso8601String(),
-      'eatenAsPrescribed': eatenAsPrescribed,
-      'alternativeFood': altFood,
-    };
-    await _firestore.collection('diet_plans').doc(_todayDietPlan!.id).update({
-      'logs': FieldValue.arrayUnion([log])
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text('Meal log saved!'), backgroundColor: Colors.blue[700]),
-    );
-  }
 
-  Future<void> _logMedicine(String medName, String time, bool taken,
-      [String? notes]) async {
-    final user = _auth.currentUser;
-    if (user == null || _todayPrescription == null) return;
-    final log = {
-      'medicationName': medName,
-      'date': DateTime.now().toIso8601String(),
-      'time': time,
-      'taken': taken,
-      'notes': notes,
-    };
-    await _firestore
-        .collection('prescriptions')
-        .doc(_todayPrescription!.id)
-        .update({
-      'logs': FieldValue.arrayUnion([log])
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text('Medicine log saved!'),
-          backgroundColor: Colors.blue[700]),
-    );
-  }
+  // ignore: unused_element
 
-  Future<void> _logExercise(String exId, bool completed,
-      [String? notes]) async {
-    final user = _auth.currentUser;
-    if (user == null || _weeklyExerciseRec == null) return;
-    final log = {
-      'exerciseId': exId,
-      'date': DateTime.now().toIso8601String(),
-      'completed': completed,
-      'notes': notes,
-    };
-    await _firestore
-        .collection('exercise_recommendations')
-        .doc(_weeklyExerciseRec!.patientId)
-        .update({
-      'logs': FieldValue.arrayUnion([log])
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text('Exercise log saved!'),
-          backgroundColor: Colors.blue[700]),
-    );
-  }
 
   void _signOut() async {
     if (!mounted) return;

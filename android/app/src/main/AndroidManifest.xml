@@ -7,7 +7,7 @@
     
     
     <application
-        android:label="doctor_app"
+        android:label="Medi-Connect"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
